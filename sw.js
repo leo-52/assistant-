@@ -1,5 +1,5 @@
-/* Service worker de l'appli Bourse : réseau d'abord (les mises à jour arrivent tout de suite), copie locale en secours hors ligne. */
-const VERSION = "v2";
+/* Service worker de l'appli Assistant : réseau d'abord (les mises à jour arrivent tout de suite), copie locale en secours hors ligne. */
+const VERSION = "v3";
 const COQUE = ["./", "index.html", "manifest.webmanifest", "icones/icone-192.png", "icones/icone-180.png"];
 
 self.addEventListener("install", e => {
@@ -24,8 +24,8 @@ self.addEventListener("fetch", e => {
 /* Notifications poussées (étape suivante) : affiche le message reçu, ouvre l'appli au toucher. */
 self.addEventListener("push", e => {
   let d = {};
-  try { d = e.data.json(); } catch { d = { title: "Bourse", body: e.data ? e.data.text() : "" }; }
-  e.waitUntil(self.registration.showNotification(d.title || "Bourse", {
+  try { d = e.data.json(); } catch { d = { title: "Assistant", body: e.data ? e.data.text() : "" }; }
+  e.waitUntil(self.registration.showNotification(d.title || "Assistant", {
     body: d.body || "", tag: d.tag, icon: "icones/icone-192.png", data: { url: d.url || "./" } }));
 });
 self.addEventListener("notificationclick", e => {

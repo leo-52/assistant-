@@ -1,4 +1,4 @@
-# Bourse — mini appli
+# Assistant — appli de leo
 
 Appli web à installer sur l'écran d'accueil : alertes, points de la journée, prédictions, score et agenda.
 

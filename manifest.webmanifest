@@ -1,7 +1,7 @@
 {
-  "name": "Bourse",
-  "short_name": "Bourse",
-  "description": "Alertes, points et prédictions de bourse.",
+  "name": "Assistant",
+  "short_name": "Assistant",
+  "description": "Assistant de leo : bourse, rappels, rendez-vous.",
   "lang": "fr",
   "start_url": "./",
   "scope": "./",
