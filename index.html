@@ -33,16 +33,16 @@ body{margin:0;background:var(--fond);color:var(--encre);font:16px/1.5 var(--text
 button,select{font:inherit;color:inherit}
 a{color:inherit}
 .haut{position:sticky;top:0;z-index:5;background:var(--fond);border-bottom:1px solid var(--trait);padding-top:env(safe-area-inset-top)}
-.barre{max-width:680px;margin:0 auto;padding:14px 18px 0;display:flex;align-items:baseline;gap:12px}
+.barre{max-width:680px;margin:0 auto;padding:14px 18px 12px;display:flex;align-items:baseline;gap:12px}
 .barre h1{font:600 24px/1.1 var(--titre);margin:0;letter-spacing:-.01em}
 .barre .maj{flex:1;color:var(--pale);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .barre .maj.souci{color:var(--baisse)}
 .lienbtn{background:none;border:0;padding:6px 0;font-size:15px;color:var(--encre);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
-nav{max-width:680px;margin:0 auto;padding:8px 18px 0;display:flex;gap:15px;overflow-x:auto;scrollbar-width:none}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--fond);border-top:1px solid var(--trait);padding:0 8px env(safe-area-inset-bottom);display:flex;justify-content:space-around}
 nav::-webkit-scrollbar{display:none}
-nav button{flex:none;background:none;border:0;padding:8px 0 10px;font-size:14.5px;color:var(--gris);border-bottom:2px solid transparent;cursor:pointer}
-nav button[aria-current="page"]{color:var(--encre);border-bottom-color:var(--encre);font-weight:600}
-main{max-width:680px;margin:0 auto;padding:18px 18px calc(env(safe-area-inset-bottom) + 40px)}
+nav button{flex:1;min-width:0;background:none;border:0;padding:12px 2px 12px;font-size:12.5px;color:var(--gris);border-top:2px solid transparent;cursor:pointer;white-space:nowrap}
+nav button[aria-current="page"]{color:var(--encre);border-top-color:var(--encre);font-weight:600}
+main{max-width:680px;margin:0 auto;padding:18px 18px calc(env(safe-area-inset-bottom) + 80px)}
 h2{font:600 20px/1.25 var(--titre);margin:26px 0 4px;letter-spacing:-.005em}
 h2:first-child{margin-top:4px}
 .chapo{color:var(--gris);font-size:14px;margin:0 0 12px}
@@ -135,14 +135,16 @@ body.ferme nav{display:none}
 <body>
 <div class="haut">
   <div class="barre"><h1>Assistant</h1><div class="maj" id="maj" role="status">Chargement…</div><button class="lienbtn" id="ouvrirMenu" aria-haspopup="dialog">Menu</button></div>
-  <nav id="nav" aria-label="Rubriques"></nav>
 </div>
+<nav id="nav" aria-label="Rubriques"></nav>
 <main id="vue"></main>
 <div class="voile" id="voile"></div>
 <aside class="tiroir" id="tiroir" role="dialog" aria-modal="true" aria-label="Menu"></aside>
 <script>
 "use strict";
 const VERSIONS = [
+  ["1.4", "24/11/2026", ["Prédictions : ce qui arrive le plus tôt en haut ; celles déjà ouvertes et pas encore jugées passent dans un bloc en bas."]],
+  ["1.3", "24/11/2026", ["Rubriques en bas de l'écran."]],
   ["1.2", "24/11/2026", ["Nouvelle présentation : rubriques Aujourd'hui, Prédictions, News, Historique, Stats, Agenda.",
     "Prédictions de ce soir et de demain avant l'ouverture, une ligne par société, le détail en un toucher.",
     "Tous les avis sont affichés et jugés, pas seulement les prédictions officielles.",
@@ -359,6 +361,14 @@ function vJour() {
 
 /* ---------- Prédictions ---------- */
 function enJeu() { return (S.d.predictions || []).filter(p => p.statut === "attente"); }
+/* Une publication est « à venir » tant que son gap n'est pas ouvert (ouverture de Wall Street, 15h30 Paris). */
+function ouvertureFaite(p) {
+  const maintenant = new Date(), auj = cle(maintenant);
+  const hm = Number(fH.format(maintenant).replace(":", ""));
+  const jourGap = p.seance === "AMC" ? joursOuvres(p.date, 1) : p.date;
+  return jourGap < auj || (jourGap === auj && hm >= 1530);
+}
+const ordreSeance = p => p.date + (p.seance === "BMO" ? "0" : "1");
 function resumeJeu(l) { const o = l.filter(p => p.officielle).length; return o + (o > 1 ? " prédictions officielles" : " prédiction officielle") + " et " + (l.length - o) + " avis"; }
 function libelleSeance(date, seance) {
   const auj = cle(new Date());
@@ -388,10 +398,11 @@ function lignePred(p) {
 }
 function vPred() {
   const jeu = enJeu();
-  if (!jeu.length) return [h("h2", null, "Prédictions"), h("p", { class: "vide" }, "Aucune publication suivie à venir. La liste se remplit vers 17h, pour le soir même et le lendemain matin.")];
+  const aVenir = jeu.filter(p => !ouvertureFaite(p)), passes = jeu.filter(ouvertureFaite);
   const groupes = new Map();
-  jeu.sort((a, b) => (a.date + (a.seance === "BMO" ? "0" : "1")).localeCompare(b.date + (b.seance === "BMO" ? "0" : "1")))
+  aVenir.sort((a, b) => ordreSeance(a).localeCompare(ordreSeance(b)))
     .forEach(p => { const k = p.date + "|" + p.seance; if (!groupes.has(k)) groupes.set(k, []); groupes.get(k).push(p); });
+
   const sortie = [h("p", { class: "chapo" }, "Jugées au cours d'ouverture de Wall Street (15h30) contre la clôture de la veille. Touchez une ligne pour le détail.")];
   for (const [k, l] of groupes) {
     const [d, s] = k.split("|");
@@ -402,10 +413,14 @@ function vPred() {
       h("div", { class: "groupe-titre" }, h("h2", null, libelleSeance(d, s)), h("span", null, l.length + " société" + (l.length > 1 ? "s" : ""))),
       off.length ? [h("div", { class: "sous" }, "Prédictions officielles"), off.map(lignePred)] : h("p", { class: "gris petit", style: "margin:10px 0" }, "Aucune prédiction officielle."),
       forts.length ? [h("div", { class: "sous" }, "Avis à 55 % et plus"), forts.map(lignePred)] : "",
-      faibles.length ? h("details", { class: "bloc", style: "margin-top:10px" },
+      faibles.length ? h("details", { class: "bloc", style: "margin-top:10px", open: !off.length && !forts.length },
         h("summary", null, h("span", { class: "t" }, "Autres avis, 51 à 54 %"), h("span", { class: "d" }, String(faibles.length))),
         h("div", { class: "contenu" }, faibles.map(lignePred))) : ""));
   }
+  if (!groupes.size) sortie.push(h("p", { class: "vide" }, "Rien à venir pour l'instant. Les prédictions du soir et du lendemain matin arrivent vers 17h."));
+  if (passes.length) sortie.push(h("details", { class: "bloc", style: "margin-top:8px" },
+    h("summary", null, h("span", { class: "t" }, "Déjà ouvertes, verdict en attente"), h("span", { class: "d" }, String(passes.length))),
+    h("div", { class: "contenu" }, passes.sort((a, b) => ordreSeance(b).localeCompare(ordreSeance(a)) || b.officielle - a.officielle || b.proba - a.proba).map(lignePred))));
   const a = S.d.argent;
   if (a && (a.en_cours || []).length) sortie.push(h("section", { class: "groupe" },
     h("div", { class: "groupe-titre" }, h("h2", null, "Argent"), h("span", null, "en cours")),
