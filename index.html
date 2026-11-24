@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bourse</title>
+<meta name="description" content="Alertes, points et prédictions de bourse.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0c1016" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bourse">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icones/icone-192.png">
+<link rel="apple-touch-icon" href="icones/icone-180.png">
+<style>
+:root{
+  --bg:#f4f5f7; --surface:#fff; --surface2:#eceff3; --line:#dfe3ea; --text:#121826; --muted:#5a6575;
+  --up:#087f4c; --up-bg:#e2f5eb; --down:#c62833; --down-bg:#fde8ea; --warn:#96610b; --warn-bg:#fbf0d9;
+  --info:#1d55c9; --info-bg:#e5edfc; --accent:#0d6f68; --ombre:0 1px 2px rgba(16,24,40,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0c1016; --surface:#151b24; --surface2:#1d2531; --line:#27313f; --text:#e9eef4; --muted:#93a0b2;
+    --up:#34d28d; --up-bg:#10301f; --down:#ff6f76; --down-bg:#3a1719; --warn:#f1b84b; --warn-bg:#35280d;
+    --info:#74abff; --info-bg:#14264a; --accent:#3fd8c5; --ombre:none;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-variant-numeric:tabular-nums;-webkit-tap-highlight-color:transparent;overscroll-behavior-y:contain}
+button{font:inherit;color:inherit}
+header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+  padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;display:flex;align-items:center;gap:12px}
+header h1{margin:0;font-size:19px;letter-spacing:-.01em;flex:none}
+#fraicheur{flex:1;min-width:0;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#fraicheur.souci{color:var(--warn)}
+#relire{flex:none;width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--surface);
+  display:grid;place-items:center;cursor:pointer}
+#relire svg{width:18px;height:18px}
+#relire.tourne svg{animation:tour .8s linear infinite}
+@keyframes tour{to{transform:rotate(360deg)}}
+main{max-width:720px;margin:0 auto;padding:12px 16px calc(env(safe-area-inset-bottom) + 86px)}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:color-mix(in srgb,var(--surface) 97%,transparent);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);
+  padding:6px 6px calc(env(safe-area-inset-bottom) + 6px);display:flex;justify-content:center}
+nav div{display:flex;width:100%;max-width:720px}
+nav button{flex:1;min-width:0;background:none;border:0;padding:6px 2px 4px;border-radius:10px;color:var(--muted);
+  display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;cursor:pointer;position:relative}
+nav button svg{width:23px;height:23px}
+nav button[aria-current="page"]{color:var(--accent);font-weight:600}
+nav .pastille{position:absolute;top:1px;left:calc(50% + 5px);min-width:17px;height:17px;padding:0 4px;border-radius:9px;
+  background:var(--down);color:#fff;font-size:10.5px;font-weight:700;line-height:17px;text-align:center}
+h2{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:20px 2px 8px;font-weight:650}
+h2:first-child{margin-top:4px}
+.carte{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 10px;box-shadow:var(--ombre)}
+.balise{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.03em;
+  background:var(--surface2);color:var(--muted);white-space:nowrap;vertical-align:1px}
+.b-up{background:var(--up-bg);color:var(--up)} .b-down{background:var(--down-bg);color:var(--down)}
+.b-warn{background:var(--warn-bg);color:var(--warn)} .b-info{background:var(--info-bg);color:var(--info)}
+.up{color:var(--up);font-weight:600} .down{color:var(--down);font-weight:600} .doux{color:var(--muted)}
+.petit{font-size:12.5px} .fort{font-weight:650}
+.puces{display:flex;gap:8px;overflow-x:auto;padding:2px 16px 10px;margin:0 -16px;scrollbar-width:none}
+.puces::-webkit-scrollbar{display:none}
+.puce{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;color:var(--muted)}
+.puce[aria-pressed="true"]{background:var(--text);border-color:var(--text);color:var(--bg);font-weight:600}
+.vide{color:var(--muted);text-align:center;padding:34px 16px}
+/* alertes */
+.alerte{border-left:4px solid var(--muted);padding-left:12px}
+.alerte.t-ALERTE,.alerte.t-MOUVEMENT{border-left-color:var(--down)} .alerte.t-RUMEUR{border-left-color:var(--warn)}
+.alerte.t-ARGENT,.alerte.t-MACRO,.alerte.t-INFO{border-left-color:var(--info)}
+.alerte .haut{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.alerte .haut time{margin-left:auto;color:var(--muted);font-size:12px}
+.alerte h3{margin:0 0 3px;font-size:15.5px;line-height:1.3}
+.alerte p{margin:0;color:var(--text)}
+.alerte .bas{margin-top:6px;color:var(--muted);font-size:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.neuve{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 45%,transparent)}
+/* points */
+details.point{padding:0}
+details.point>summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;align-items:center;gap:10px}
+details.point>summary::-webkit-details-marker{display:none}
+details.point>summary .nom{font-weight:650;flex:1;min-width:0}
+details.point>summary .chevron{width:16px;height:16px;color:var(--muted);transition:transform .15s}
+details.point[open]>summary .chevron{transform:rotate(90deg)}
+details.point .corps{padding:0 14px 12px;border-top:1px solid var(--line)}
+.corps .section{font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:14px 0 4px}
+.corps .ligne{margin:8px 0;padding:0}
+.corps .ligne .titre{font-weight:700;margin-bottom:2px}
+.corps .ligne.titree{background:var(--surface2);border-radius:10px;padding:9px 11px}
+.corps ul{margin:0;padding:0;list-style:none}
+.corps li{position:relative;padding-left:13px;margin:2px 0}
+.corps li::before{content:"";position:absolute;left:2px;top:.62em;width:4px;height:4px;border-radius:50%;background:var(--muted);opacity:.7}
+.corps .note{color:var(--muted);font-size:12.5px;margin-top:12px}
+/* predictions */
+.pred .tete{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pred .tick{font-size:18px;font-weight:750;letter-spacing:-.01em}
+.pred .grille{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin-top:8px;font-size:14px}
+.pred .grille dt{color:var(--muted);font-size:12.5px;padding-top:1px} .pred .grille dd{margin:0;min-width:0}
+.pred details{margin-top:8px;font-size:13.5px} .pred summary{color:var(--accent);cursor:pointer;font-size:13px}
+.rang{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.rang:first-child{border-top:0;padding-top:2px} .rang:last-child{padding-bottom:2px}
+.rang .tick{font-weight:700;width:58px;flex:none} .rang .mil{flex:1;min-width:0;color:var(--muted);font-size:12.5px}
+.rang .gap{width:62px;text-align:right;flex:none}
+.faibles{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+/* score */
+.gros{font-size:34px;font-weight:780;letter-spacing:-.02em;line-height:1.1}
+.gros small{font-size:15px;font-weight:500;color:var(--muted);letter-spacing:0}
+.barre{height:8px;border-radius:5px;background:var(--surface2);overflow:hidden;margin:10px 0 6px}
+.barre i{display:block;height:100%;background:var(--accent);border-radius:5px}
+.profil{display:grid;grid-template-columns:86px 1fr 92px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
+.profil:first-of-type{border-top:0} .profil .barre{margin:0}
+.trio{display:flex;gap:8px} .trio div{flex:1;background:var(--surface2);border-radius:10px;padding:8px 10px;text-align:center}
+.trio b{display:block;font-size:20px}
+/* agenda */
+.jour>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;font-weight:700}
+.jour>summary::-webkit-details-marker{display:none}
+.rdv{display:grid;grid-template-columns:88px 1fr;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.rdv:first-of-type{margin-top:8px} .rdv .h{font-weight:650;font-size:13px} .rdv .suite{color:var(--muted);font-size:13px;margin-top:2px}
+@media (prefers-reduced-motion: reduce){#relire.tourne svg{animation:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Bourse</h1>
+  <div id="fraicheur" role="status">Chargement…</div>
+  <button id="relire" aria-label="Relire les données">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 6.3"/><path d="M20 4v7h-7"/></svg>
+  </button>
+</header>
+<main id="vue"></main>
+<nav aria-label="Onglets"><div id="onglets"></div></nav>
+<script>
+"use strict";
+const ONGLETS = [
+  ["alertes", "Alertes", '<path d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 7H4c0-1 2-2 2-7z"/><path d="M10 20a2 2 0 0 0 4 0"/>'],
+  ["points", "Points", '<path d="M6 3h9l4 4v14H6z"/><path d="M9 11h7M9 15h7M9 7h3"/>'],
+  ["predictions", "Prédictions", '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>'],
+  ["score", "Score", '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'],
+  ["agenda", "Agenda", '<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'],
+];
+const FICHIERS = ["alertes", "points", "predictions", "score", "agenda", "argent", "etat"];
+const BALISES = { ALERTE: "b-down", MOUVEMENT: "b-down", RUMEUR: "b-warn", ARGENT: "b-info", MACRO: "b-info", INFO: "" };
+const S = { onglet: "alertes", d: {}, filtre: "TOUTES", jour: null, lu: null, souci: false, vuAvant: null };
+
+/* ---------- petits outils ---------- */
+function h(nom, attrs, ...enfants) {
+  const e = document.createElement(nom);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v === false || v == null) continue;
+    if (k === "class") e.className = v; else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else if (k === "open") e.open = true; else e.setAttribute(k, v);
+  }
+  for (const c of enfants.flat()) if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(String(c)));
+  return e;
+}
+const garde = { lis(k) { try { return localStorage.getItem(k); } catch { return null; } },
+                ecris(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+const fmtH = new Intl.DateTimeFormat("fr-FR", { timeZone: "Europe/Paris", hour: "2-digit", minute: "2-digit" });
+const fmtJ = new Intl.DateTimeFormat("fr-FR", { timeZone: "Europe/Paris", weekday: "short", day: "2-digit", month: "2-digit" });
+const fmtCle = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit" });
+const heure = iso => fmtH.format(new Date(iso)).replace(":", "h");
+const jour = iso => fmtJ.format(new Date(iso)).replace(".", "");
+const cleJour = d => fmtCle.format(d);                       // AAAA-MM-JJ, heure de Paris
+const jourDeDate = j => jour(j + "T12:00:00Z");              // « mar 24/11 » depuis AAAA-MM-JJ
+const nb = (x, d = 2) => x == null ? "—" : Number(x).toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d });
+const pct = (x, d = 1) => x == null ? "—" : (x > 0 ? "+" : x < 0 ? "−" : "") + nb(Math.abs(x), d) + " %";
+function quand(iso) {
+  const min = Math.round((Date.now() - new Date(iso)) / 60000);
+  if (min < 1) return "à l'instant"; if (min < 60) return "il y a " + min + " min";
+  if (cleJour(new Date(iso)) === cleJour(new Date())) return heure(iso);
+  return jour(iso) + " " + heure(iso);
+}
+const sensMot = (s, off) => off ? (s === "H" ? "HAUSSIER" : "BAISSIER") : (s === "H" ? "avis hausse" : "avis baisse");
+const verdictBalise = st => st === "juste" ? h("span", { class: "balise b-up" }, "JUSTE")
+  : st === "faux" ? h("span", { class: "balise b-down" }, "FAUX") : h("span", { class: "balise" }, "PLAT");
+
+/* Met en couleur les mots clés et les pourcentages signés d'un texte, sans jamais injecter de HTML. */
+const MOTIF = /(PAS ENCORE PUBLIÉ|DÉJÀ PUBLIÉ|HAUSSIER|BAISSIER|JUSTE|FAUX|(?<![\dA-Za-zÀ-ÿ])[+−-]\d+(?:,\d+)?\s?%)/g;
+function colore(texte) {
+  return texte.split(MOTIF).map((bout, i) => {
+    if (i % 2 === 0) return bout;
+    if (/%$/.test(bout)) return h("span", { class: bout[0] === "+" ? "up" : "down" }, bout);
+    const cl = { HAUSSIER: "up", JUSTE: "up", BAISSIER: "down", FAUX: "down", "PAS ENCORE PUBLIÉ": "fort", "DÉJÀ PUBLIÉ": "fort" }[bout];
+    return h("span", { class: cl }, bout);
+  });
+}
+
+/* ---------- chargement ---------- */
+async function recharge() {
+  const bouton = document.getElementById("relire"); bouton.classList.add("tourne");
+  const res = await Promise.allSettled(FICHIERS.map(n =>
+    fetch("data/" + n + ".json?t=" + Date.now(), { cache: "no-store" }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })));
+  S.souci = false;
+  res.forEach((r, i) => { if (r.status === "fulfilled") S.d[FICHIERS[i]] = r.value; else S.souci = true; });
+  S.lu = new Date();
+  bouton.classList.remove("tourne");
+  dessine();
+}
+function fraicheur() {
+  const el = document.getElementById("fraicheur"), maj = S.d.etat && S.d.etat.maj;
+  el.classList.toggle("souci", S.souci);
+  if (S.souci && !maj) { el.textContent = "Données illisibles, nouvelle tentative…"; return; }
+  el.textContent = (S.souci ? "Hors ligne · " : "") + (maj ? "Données du " + jour(maj) + " à " + heure(maj) : "Aucune donnée");
+}
+
+/* ---------- onglets ---------- */
+function nonLues() {
+  const vu = garde.lis("alerte_vue") || "";
+  return (S.d.alertes || []).filter(a => (a.ts || "") > vu).length;
+}
+function barre() {
+  const n = nonLues();
+  document.getElementById("onglets").replaceChildren(...ONGLETS.map(([id, nom, trace]) => {
+    const b = h("button", { "aria-current": S.onglet === id ? "page" : null, onclick: () => va(id) });
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + trace + "</svg>";
+    b.append(nom);
+    if (id === "alertes" && n && S.onglet !== "alertes") b.append(h("span", { class: "pastille" }, n > 99 ? "99+" : n));
+    return b;
+  }));
+  if (navigator.setAppBadge) navigator.setAppBadge(S.onglet === "alertes" ? 0 : n).catch(() => {});
+}
+function va(id) {
+  S.onglet = id; garde.ecris("onglet", id); scrollTo(0, 0); dessine();
+}
+function dessine() {
+  fraicheur();
+  const vue = document.getElementById("vue");
+  vue.replaceChildren(...({ alertes: vAlertes, points: vPoints, predictions: vPredictions, score: vScore, agenda: vAgenda }[S.onglet])());
+  barre();
+}
+
+/* ---------- Alertes ---------- */
+function vAlertes() {
+  const toutes = S.d.alertes || [];
+  if (S.vuAvant === null) S.vuAvant = garde.lis("alerte_vue") || "";
+  if (toutes.length) garde.ecris("alerte_vue", toutes.reduce((m, a) => a.ts > m ? a.ts : m, ""));
+  const types = ["TOUTES", ...Object.keys(BALISES).filter(b => toutes.some(a => a.balise === b))];
+  const liste = toutes.filter(a => S.filtre === "TOUTES" || a.balise === S.filtre);
+  const puces = h("div", { class: "puces", role: "group", "aria-label": "Filtrer les alertes" }, types.map(t =>
+    h("button", { class: "puce", "aria-pressed": String(S.filtre === t), onclick: () => { S.filtre = t; dessine(); } },
+      t === "TOUTES" ? "Toutes" : t[0] + t.slice(1).toLowerCase())));
+  if (!liste.length) return [puces, h("div", { class: "vide" }, "Aucune alerte pour l'instant. Elles s'empilent ici, la plus récente en haut.")];
+  return [puces, ...liste.map(a => h("article", { class: "carte alerte t-" + a.balise + ((a.ts || "") > S.vuAvant ? " neuve" : "") },
+    h("div", { class: "haut" }, h("span", { class: "balise " + (BALISES[a.balise] || "") }, a.balise),
+      a.ticker && h("span", { class: "fort" }, a.ticker), h("time", { datetime: a.ts }, quand(a.ts))),
+    h("h3", null, colore(a.titre || "")), a.texte && h("p", null, colore(a.texte)),
+    (a.source || a.fiabilite) && h("div", { class: "bas" },
+      a.fiabilite && h("span", { class: "balise " + (a.fiabilite === "confirmé" ? "b-up" : "b-warn") }, a.fiabilite),
+      a.source && h("span", null, "Source : " + a.source))))];
+}
+
+/* ---------- Points ---------- */
+function corpsPoint(texte) {
+  const lignes = texte.split("\n").map(l => l.trim()).filter(Boolean), sortie = [];
+  lignes.forEach((l, i) => {
+    if (i === 0) return;                                             // le titre est déjà dans l'en-tête
+    if (/^Cible = /.test(l)) { sortie.push(h("p", { class: "note" }, l)); return; }
+    if (l.length < 70 && /:$/.test(l) || /^[A-ZÉÈÀ0-9 /'’—-]{6,}$/.test(l)) { sortie.push(h("div", { class: "section" }, l.replace(/\s*:$/, ""))); return; }
+    const m = l.match(/^((?:[A-Z][A-Za-z.&]{0,5}|Argent|Or)(?: \([^)]{1,40}\))?) — (.*)$/);
+    const bouts = (m ? m[2] : l).replace(/^- /, "").split(" · ");
+    sortie.push(h("div", { class: "ligne" + (m ? " titree" : "") }, m && h("div", { class: "titre" }, m[1]),
+      bouts.length > 1 ? h("ul", null, bouts.map(b => h("li", null, colore(b)))) : h("div", null, colore(bouts[0]))));
+  });
+  return sortie;
+}
+function vPoints() {
+  const tous = S.d.points || [];
+  if (!tous.length) return [h("div", { class: "vide" }, "Aucun point pour l'instant.")];
+  const jours = [...new Set(tous.map(p => p.date))].sort().reverse();
+  if (!jours.includes(S.jour)) S.jour = jours[0];
+  const puces = h("div", { class: "puces", role: "group", "aria-label": "Choisir le jour" }, jours.slice(0, 14).map(j =>
+    h("button", { class: "puce", "aria-pressed": String(S.jour === j), onclick: () => { S.jour = j; dessine(); } }, jourDeDate(j))));
+  const duJour = tous.filter(p => p.date === S.jour).sort((a, b) => (b.heure || "").localeCompare(a.heure || ""));
+  return [puces, ...duJour.map((p, i) => h("details", { class: "carte point", open: i === 0 },
+    h("summary", null, h("span", { class: "nom" }, p.nom || p.type), p.heure && h("span", { class: "doux petit" }, heure(p.heure)),
+      (() => { const s = h("span", { class: "chevron" }); s.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg>'; return s; })()),
+    h("div", { class: "corps" }, corpsPoint(p.texte || ""))))];
+}
+
+/* ---------- Prédictions ---------- */
+function carteJeu(p) {
+  const ecart = p.cours && p.cible ? (p.cible / p.cours - 1) * 100 : null;
+  return h("article", { class: "carte pred" },
+    h("div", { class: "tete" }, h("span", { class: "tick" }, p.ticker),
+      h("span", { class: "balise " + (p.sens === "H" ? "b-up" : "b-down") }, sensMot(p.sens, p.officielle) + " " + p.proba + " %"),
+      h("span", { class: "doux petit" }, p.officielle ? "officielle" + (p.profil ? " · profil " + p.profil : "") : "avis")),
+    h("dl", { class: "grille" },
+      p.quand && [h("dt", null, "Publie"), h("dd", null, p.quand)],
+      p.cours != null && [h("dt", null, "Cours"), h("dd", null, nb(p.cours) + " $", h("span", { class: "doux petit" }, " à la préparation" + (p.cours_quand ? " (" + p.cours_quand + ")" : "")))],
+      p.cible != null && [h("dt", null, "Cible"), h("dd", null, nb(p.cible) + " $ ", ecart != null && h("span", { class: ecart > 0 ? "up" : "down" }, "(" + pct(ecart) + ")"))],
+      p.options != null && [h("dt", null, "Options"), h("dd", null, "±" + nb(p.options, 1) + " % attendus")],
+      p.change_si && [h("dt", null, "Change si"), h("dd", null, p.change_si)]),
+    p.raisons && h("details", null, h("summary", null, "Pourquoi"), h("p", { style: "margin:6px 0 0" }, colore(p.raisons))));
+}
+function vPredictions() {
+  const toutes = S.d.predictions || [];
+  if (!toutes.length) return [h("div", { class: "vide" }, "Aucune prédiction pour l'instant.")];
+  const sortie = [], jeu = toutes.filter(p => p.statut === "attente");
+  const groupes = new Map();
+  jeu.filter(p => p.officielle || p.proba >= 55).forEach(p => {
+    const k = p.date + "|" + p.seance; if (!groupes.has(k)) groupes.set(k, []); groupes.get(k).push(p);
+  });
+  sortie.push(h("h2", null, "En jeu"));
+  if (!groupes.size) sortie.push(h("div", { class: "carte doux" }, "Aucune prédiction en attente."));
+  for (const [k, liste] of groupes) {
+    const [d, s] = k.split("|");
+    sortie.push(h("div", { class: "doux petit", style: "margin:10px 2px 6px" },
+      jourDeDate(d) + " · publie " + (s === "AMC" ? "après la clôture, jugé à l'ouverture suivante" : "avant l'ouverture, jugé à l'ouverture du jour")));
+    liste.forEach(p => sortie.push(carteJeu(p)));
+  }
+  const faibles = jeu.filter(p => !p.officielle && p.proba < 55);
+  if (faibles.length) sortie.push(h("details", { class: "carte" }, h("summary", { class: "fort", style: "cursor:pointer" }, "Avis faibles, 51 à 54 % (" + faibles.length + ")"),
+    h("div", { class: "faibles" }, faibles.map(p => h("span", { class: "balise " + (p.sens === "H" ? "b-up" : "b-down") }, p.ticker + " " + (p.sens === "H" ? "hausse" : "baisse") + " " + p.proba + " %")))));
+  const jugees = toutes.filter(p => p.statut !== "attente" && (p.officielle || p.proba >= 55)).reverse();
+  if (jugees.length) {
+    sortie.push(h("h2", null, "Jugées à l'ouverture"));
+    sortie.push(h("div", { class: "carte" }, jugees.map(p => h("div", { class: "rang" },
+      h("span", { class: "tick" }, p.ticker),
+      h("span", { class: "mil" }, jourDeDate(p.date) + " · ", h("span", { class: p.sens === "H" ? "up" : "down" }, sensMot(p.sens, p.officielle)), " " + p.proba + " %"),
+      h("span", { class: "gap " + (p.gap > 0 ? "up" : "down") }, pct(p.gap)), verdictBalise(p.statut)))));
+  }
+  return sortie;
+}
+
+/* ---------- Score ---------- */
+function vScore() {
+  const s = S.d.score, a = S.d.argent, sortie = [];
+  if (s) {
+    sortie.push(h("h2", null, "Règle " + s.regle + " · prédictions officielles"));
+    sortie.push(h("div", { class: "carte" },
+      h("div", { class: "gros" }, s.justes + " ", h("small", null, "justes sur " + s.tranchees + " tranchées")),
+      h("div", { class: "barre", role: "img", "aria-label": s.tranchees + " tranchées sur " + s.objectif }, h("i", { style: "width:" + Math.min(100, 100 * s.tranchees / s.objectif) + "%" })),
+      h("div", { class: "petit doux" }, s.tranchees + " sur " + s.objectif + " avant le verdict · " + s.en_attente + " en attente"),
+      h("div", { style: "margin-top:10px" }, h("span", { class: "fort" }, nb(s.taux, 1) + " %"), " de justes · gap signé moyen ",
+        h("span", { class: s.gap_signe_moyen > 0 ? "up" : "down" }, pct(s.gap_signe_moyen, 2))),
+      h("div", { class: "petit doux", style: "margin-top:6px" }, "Verdict à " + s.objectif + " tranchées : la règle est gardée si au moins 60 % de justes et un gap signé moyen positif.")));
+    sortie.push(h("h2", null, "Avis à 55 % et plus"));
+    sortie.push(h("div", { class: "carte trio" }, h("div", null, h("b", { class: "up" }, s.avis55.juste), s.avis55.juste > 1 ? "justes" : "juste"),
+      h("div", null, h("b", { class: "down" }, s.avis55.faux), "faux"), h("div", null, h("b", null, s.avis55.plat), s.avis55.plat > 1 ? "plats" : "plat")));
+    if (s.profils && s.profils.length) {
+      sortie.push(h("h2", null, "Proba par profil"));
+      sortie.push(h("div", { class: "carte" }, s.profils.map(p => h("div", { class: "profil" }, h("span", { class: "fort" }, p.profil),
+        h("div", { class: "barre" }, h("i", { style: "width:" + p.proba + "%" })),
+        h("span", { class: "petit", style: "text-align:right" }, p.proba + " % ", h("span", { class: "doux" }, "(" + p.justes + "/" + p.tranchees + ")")))),
+        h("div", { class: "petit doux", style: "margin-top:8px" }, "Proba = taux mesuré des prédictions passées de même profil, ramené vers 63 % quand l'échantillon est petit.")));
+    }
+    if (s.liste && s.liste.length) {
+      sortie.push(h("h2", null, "Dernières tranchées"));
+      sortie.push(h("div", { class: "carte" }, s.liste.map(p => h("div", { class: "rang" }, h("span", { class: "tick" }, p.ticker),
+        h("span", { class: "mil" }, jourDeDate(p.date) + " · ", h("span", { class: p.sens === "H" ? "up" : "down" }, p.sens === "H" ? "HAUSSIER" : "BAISSIER"), " " + (p.proba ?? "—") + " %"),
+        h("span", { class: "gap " + (p.gap > 0 ? "up" : "down") }, pct(p.gap)), verdictBalise(p.statut)))));
+    }
+  }
+  if (a && ((a.en_cours || []).length || (a.jugees || []).length)) {
+    sortie.push(h("h2", null, "Argent"));
+    sortie.push(h("div", { class: "carte" },
+      (a.en_cours || []).map(p => h("div", { style: "margin-bottom:10px" },
+        h("div", null, h("span", { class: "balise " + (p.sens === "H" ? "b-up" : "b-down") }, (p.sens === "H" ? "HAUSSE " : "BAISSE ") + p.proba + " %"), " ", h("span", { class: "fort" }, p.texte)),
+        h("div", { class: "petit doux", style: "margin-top:4px" }, "Émise le " + jourDeDate(p.emise) + " depuis " + nb(p.depuis) + " $ · cible " + nb(p.cible, 1) + " $ · échéance " + jourDeDate(p.echeance)),
+        p.change_si && h("div", { class: "petit", style: "margin-top:2px" }, "Change si : " + p.change_si))),
+      (a.jugees || []).map(p => h("div", { class: "rang" }, h("span", { class: "mil", style: "color:var(--text);font-size:13.5px" }, p.texte, p.note && h("span", { class: "doux" }, " · " + p.note)), verdictBalise(p.statut))),
+      a.fin_annee && h("div", { class: "petit doux", style: "margin-top:10px" }, "Fin d'année : médiane " + a.fin_annee.mediane + " $ · sous 40 $ : " + a.fin_annee.sous_40 + " % · plus de 50 $ : " + a.fin_annee.plus_de_50 + " % (révisé le " + jourDeDate(a.fin_annee.revise_le) + ")")));
+  }
+  return sortie.length ? sortie : [h("div", { class: "vide" }, "Aucun score pour l'instant.")];
+}
+
+/* ---------- Agenda ---------- */
+function vAgenda() {
+  const a = S.d.agenda;
+  if (!a || !(a.jours || []).length) return [h("div", { class: "vide" }, "Aucun rendez-vous pour l'instant.")];
+  const auj = cleJour(new Date());
+  return [h("div", { class: "doux petit", style: "margin:2px 2px 10px" }, "Heures de Paris · écrit le " + (a.ecrit_le ? jour(a.ecrit_le) : "—") + ", avant la semaine"),
+    ...a.jours.map(j => h("details", { class: "carte jour", open: !j.date || j.date >= auj },
+      h("summary", null, j.jour + (j.date ? " " + j.date.slice(8) + "/" + j.date.slice(5, 7) : ""),
+        j.date === auj && h("span", { class: "balise b-info" }, "aujourd'hui"), j.note && h("span", { class: "doux petit", style: "font-weight:400" }, j.note)),
+      j.items.map(r => { const [un, ...reste] = r.texte.split(/(?<=\.) /); return h("div", { class: "rdv" }, h("div", { class: "h" }, r.quand || "—"),
+        h("div", null, h("div", null, colore(un)), reste.length > 0 && h("div", { class: "suite" }, colore(reste.join(" "))))); })))];
+}
+
+/* ---------- démarrage ---------- */
+const dernier = garde.lis("onglet"); if (ONGLETS.some(o => o[0] === dernier)) S.onglet = dernier;
+barre();
+document.getElementById("relire").addEventListener("click", recharge);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) recharge(); });
+setInterval(() => { if (!document.hidden) recharge(); }, 60000);
+recharge();
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  const premiere = !navigator.serviceWorker.controller;   // première visite : relire une fois pour garder une copie hors ligne
+  navigator.serviceWorker.register("sw.js").then(() => navigator.serviceWorker.ready)
+    .then(() => { if (premiere) setTimeout(recharge, 1500); }).catch(() => {});
+}
+</script>
+</body>
+</html>
