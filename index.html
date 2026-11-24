@@ -28,21 +28,22 @@
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--fond);color:var(--encre);font:16px/1.5 var(--texte);font-variant-numeric:tabular-nums;
+html,body{height:100%}
+body{margin:0;height:100dvh;display:flex;flex-direction:column;overflow:hidden;background:var(--fond);color:var(--encre);font:16px/1.5 var(--texte);font-variant-numeric:tabular-nums;
   -webkit-tap-highlight-color:transparent}
 button,select{font:inherit;color:inherit}
 a{color:inherit}
-.haut{position:sticky;top:0;z-index:5;background:var(--fond);border-bottom:1px solid var(--trait);padding-top:env(safe-area-inset-top)}
+.haut{flex:none;z-index:5;background:var(--fond);border-bottom:1px solid var(--trait);padding-top:env(safe-area-inset-top)}
 .barre{max-width:680px;margin:0 auto;padding:14px 18px 12px;display:flex;align-items:baseline;gap:12px}
 .barre h1{font:600 24px/1.1 var(--titre);margin:0;letter-spacing:-.01em}
 .barre .maj{flex:1;color:var(--pale);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .barre .maj.souci{color:var(--baisse)}
 .lienbtn{background:none;border:0;padding:6px 0;font-size:15px;color:var(--encre);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
-nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--fond);border-top:1px solid var(--trait);padding:0 8px env(safe-area-inset-bottom);display:flex;justify-content:space-around}
+nav{flex:none;z-index:6;background:var(--fond);border-top:1px solid var(--trait);padding:0 12px env(safe-area-inset-bottom);display:flex;justify-content:space-between;gap:6px}
 nav::-webkit-scrollbar{display:none}
-nav button{flex:1;min-width:0;background:none;border:0;padding:12px 2px 12px;font-size:12.5px;color:var(--gris);border-top:2px solid transparent;cursor:pointer;white-space:nowrap}
+nav button{flex:0 1 auto;min-width:0;background:none;border:0;padding:12px 0;font-size:12px;letter-spacing:-.01em;color:var(--gris);border-top:2px solid transparent;cursor:pointer;white-space:nowrap}
 nav button[aria-current="page"]{color:var(--encre);border-top-color:var(--encre);font-weight:600}
-main{max-width:680px;margin:0 auto;padding:18px 18px calc(env(safe-area-inset-bottom) + 80px)}
+main{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;width:100%;max-width:680px;margin:0 auto;padding:18px 18px 28px}
 h2{font:600 20px/1.25 var(--titre);margin:26px 0 4px;letter-spacing:-.005em}
 h2:first-child{margin-top:4px}
 .chapo{color:var(--gris);font-size:14px;margin:0 0 12px}
@@ -129,6 +130,7 @@ select.choix{appearance:none;-webkit-appearance:none;background:var(--papier) ur
 .verrou .btn{width:100%;text-align:center}
 .erreur{color:var(--baisse);font-size:14px;margin-top:10px;min-height:1.2em}
 body.ferme nav{display:none}
+body.ferme main{padding-bottom:calc(env(safe-area-inset-bottom) + 28px)}
 @media (prefers-reduced-motion: reduce){.tiroir{transition:none}}
 </style>
 </head>
@@ -136,13 +138,15 @@ body.ferme nav{display:none}
 <div class="haut">
   <div class="barre"><h1>Assistant</h1><div class="maj" id="maj" role="status">Chargement…</div><button class="lienbtn" id="ouvrirMenu" aria-haspopup="dialog">Menu</button></div>
 </div>
-<nav id="nav" aria-label="Rubriques"></nav>
 <main id="vue"></main>
+<nav id="nav" aria-label="Rubriques"></nav>
 <div class="voile" id="voile"></div>
 <aside class="tiroir" id="tiroir" role="dialog" aria-modal="true" aria-label="Menu"></aside>
 <script>
 "use strict";
 const VERSIONS = [
+  ["1.6", "25/11/2026", ["Notifications de l'appli elle-même : Menu, Activer les notifications."]],
+  ["1.5", "25/11/2026", ["Barre des rubriques fixe en bas, libellés qui ne se chevauchent plus.", "Stats : ce que vaut chaque critère.", "Règle v3.9 : seuls les critères A, C, D, E comptent ; nouveau compteur."]],
   ["1.4", "24/11/2026", ["Prédictions : ce qui arrive le plus tôt en haut ; celles déjà ouvertes et pas encore jugées passent dans un bloc en bas."]],
   ["1.3", "24/11/2026", ["Rubriques en bas de l'écran."]],
   ["1.2", "24/11/2026", ["Nouvelle présentation : rubriques Aujourd'hui, Prédictions, News, Historique, Stats, Agenda.",
@@ -323,7 +327,7 @@ async function recharge() {
 /* ---------- navigation ---------- */
 function nav() {
   document.getElementById("nav").replaceChildren(...RUBRIQUES.map(([id, nom]) =>
-    h("button", { "aria-current": S.r === id ? "page" : null, onclick: () => { S.r = id; garde.ecris("rubrique", id); scrollTo(0, 0); dessine(); } }, nom)));
+    h("button", { "aria-current": S.r === id ? "page" : null, onclick: () => { S.r = id; garde.ecris("rubrique", id); document.getElementById("vue").scrollTop = 0; dessine(); } }, nom)));
 }
 function majTexte() {
   const el = document.getElementById("maj"), m = S.d.etat && S.d.etat.maj;
@@ -474,7 +478,7 @@ function vStats() {
   const s = S.d.score, jug = (S.d.predictions || []).filter(p => p.statut !== "attente"), sortie = [];
   if (s) {
     sortie.push(h("h2", null, "Prédictions officielles"),
-      h("p", { class: "chapo" }, "Règle " + s.regle + ". Verdict après " + s.objectif + " prédictions : gardée si 60 % de justes au moins et gain moyen positif."),
+      h("p", { class: "chapo" }, "Règle " + s.regle + " depuis le 25/11 (la v3.8 s'est arrêtée à 6 justes sur 9). Verdict après " + s.objectif + " prédictions : gardée si 60 % de justes au moins et gain moyen positif."),
       h("div", { class: "chiffres" },
         h("div", null, h("b", null, s.justes + "/" + s.tranchees), h("span", null, "justes")),
         h("div", null, h("b", null, s.taux == null ? "—" : nb(s.taux, 0) + " %"), h("span", null, "de réussite")),
@@ -495,6 +499,13 @@ function vStats() {
       h("tbody", null, [...mois].sort().reverse().map(([m, v]) => h("tr", null,
         h("td", null, new Date(m + "-15T12:00:00Z").toLocaleDateString("fr-FR", { month: "long", year: "numeric" })),
         h("td", { class: "num" }, v[1] ? v[0] + " / " + v[1] : "—"), h("td", { class: "num" }, v[3] ? v[2] + " / " + v[3] : "—"))))));
+  if (s && s.criteres && s.criteres.length) sortie.push(h("h2", null, "Ce que vaut chaque critère"),
+    h("p", { class: "chapo" }, "Quand le critère indique un sens, combien de fois le gap est allé dans ce sens. Recalculé chaque matin avec les nouveaux résultats."),
+    h("table", { class: "t" }, h("thead", null, h("tr", null, h("th", null, "Critère"), h("th", { class: "num" }, "Cas"), h("th", { class: "num" }, "Juste"))),
+      h("tbody", null, s.criteres.slice().sort((x, y) => (y.taux || 0) - (x.taux || 0)).map(c => h("tr", null,
+        h("td", null, (c.case || "").replace(/^([a-f]), /, (m, l) => l.toUpperCase() + " — ")),
+        h("td", { class: "num" }, c.sur), h("td", { class: "num " + ((c.taux || 0) >= 55 ? "h" : "pale") }, c.taux == null ? "—" : nb(c.taux, 0) + " %"))))),
+    h("p", { class: "petit gris" }, "Depuis le 25/11 (règle v3.9), seuls les critères A, C, D et E comptent pour une prédiction officielle ; B et F, pas meilleurs que pile ou face, restent notés."));
   if (s && s.profils && s.profils.length) sortie.push(h("h2", null, "Probabilité par profil"),
     h("p", { class: "chapo" }, "Une prédiction officielle reçoit la réussite mesurée des cas passés qui lui ressemblent."),
     h("table", { class: "t" }, h("thead", null, h("tr", null, h("th", null, "Profil"), h("th", { class: "num" }, "Cas"), h("th", { class: "num" }, "Proba"))),
@@ -523,11 +534,7 @@ function ouvreMenu() {
   const m = S.d.etat && S.d.etat.maj;
   t.replaceChildren(
     h("div", { class: "entete" }, h("h2", null, "Menu"), h("button", { class: "lienbtn", onclick: fermeMenu }, "Fermer")),
-    h("details", { class: "bloc", open: true }, h("summary", null, h("span", { class: "t" }, "Notifications")),
-      h("div", { class: "contenu" },
-        h("p", { class: "petit gris", style: "margin-top:0" }, "Chaque notification a son interrupteur dans Home Assistant (Paramètres, Appareils et services, Entrées). Tout est activé au départ. Un point coupé reste lisible ici."),
-        NOTIFS.map(([n, id]) => h("div", { class: "reglage" }, h("span", null, n), h("span", null, "« " + id.replace(/_/g, " ").replace("assistant notif", "Assistant notif") + " »"))),
-        h("a", { class: "btn", href: "homeassistant://navigate/config/helpers" }, "Ouvrir les réglages dans Home Assistant"))),
+    h("details", { class: "bloc", open: true }, h("summary", null, h("span", { class: "t" }, "Notifications")), h("div", { class: "contenu", id: "zoneNotif" }, blocNotif())),
     h("details", { class: "bloc" }, h("summary", null, h("span", { class: "t" }, "Données")),
       h("div", { class: "contenu" },
         h("div", { class: "reglage" }, h("span", null, "Dernière mise à jour"), h("span", null, m ? jourCourt(cle(new Date(m))) + " à " + heure(m) : "—")),
@@ -540,6 +547,37 @@ function ouvreMenu() {
     h("details", { class: "bloc" }, h("summary", null, h("span", { class: "t" }, "À propos")),
       h("div", { class: "contenu petit gris" }, "Préparé par Claude pour leo. Les prédictions sont des estimations ; aucune n'est un ordre. Pour en parler, écris dans la conversation « Dossier trading ».")));
   t.classList.add("ouvert"); v.classList.add("ouvert");
+}
+const CLE_PUSH = "BAJKmlgmqiQvJzJQYarwuQZZbLCi-swkYqLZ3DpAbjBlnifOBRR9qZcBZSxw7rask0lo7QjqFQ6FezOI99nDo04";
+function cleOctets(s) { const b = atob(s.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((s.length + 3) % 4)); return Uint8Array.from(b, c => c.charCodeAt(0)); }
+function blocNotif() {
+  const zone = [];
+  const autonome = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+  zone.push(h("p", { class: "petit gris", style: "margin-top:0" }, "Matin 07h30, avant l'ouverture 15h00, bilan vers 16h30, soir 21h30, et les alertes importantes. Une ligne à chaque fois ; le détail est ici."));
+  if (!("serviceWorker" in navigator) || !("PushManager" in window) || !autonome) {
+    zone.push(h("p", { class: "petit" }, "Ouvre l'appli depuis son icône sur l'écran d'accueil pour activer les notifications (dans Safari, Partager puis « Sur l'écran d'accueil »)."));
+    return zone;
+  }
+  const etat = h("p", { class: "petit" }, "Notification.permission" in window ? "" : "");
+  const sortie = h("div");
+  const montreCode = sub => {
+    const texte = JSON.stringify(sub);
+    const ta = h("textarea", { readonly: "", "aria-label": "Code à envoyer à Claude", style: "width:100%;height:90px;font:12px/1.4 ui-monospace,Menlo,monospace;background:var(--papier);color:var(--encre);border:1px solid var(--trait);border-radius:6px;padding:8px" }); ta.value = texte;
+    const copie = h("button", { class: "btn plein", onclick: async () => { try { await navigator.clipboard.writeText(texte); copie.textContent = "Copié"; } catch { ta.select(); } } }, "Copier le code");
+    sortie.replaceChildren(h("p", { class: "petit" }, "Envoie ce code à Claude dans la conversation « Dossier trading ». Il ne contient rien de secret : il dit seulement où livrer les notifications sur ce téléphone."), ta, copie);
+  };
+  const active = h("button", { class: "btn plein", onclick: async () => {
+    try {
+      const perm = await Notification.requestPermission();
+      if (perm !== "granted") { etat.textContent = "Refusé. Réglages de l'iPhone, Notifications, Assistant, pour autoriser."; return; }
+      const reg = await navigator.serviceWorker.ready;
+      const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: cleOctets(CLE_PUSH) });
+      garde.ecris("push", "1"); etat.textContent = "Activées sur ce téléphone."; montreCode(sub);
+    } catch (e) { etat.textContent = "Impossible ici : " + (e && e.message || e); }
+  } }, "Activer les notifications");
+  zone.push(etat, active, sortie);
+  navigator.serviceWorker.ready.then(r => r.pushManager.getSubscription()).then(s => { if (s) { etat.textContent = "Activées sur ce téléphone."; active.textContent = "Afficher le code"; } }).catch(() => {});
+  return zone;
 }
 function fermeMenu() { document.getElementById("tiroir").classList.remove("ouvert"); document.getElementById("voile").classList.remove("ouvert"); }
 document.getElementById("ouvrirMenu").addEventListener("click", ouvreMenu);

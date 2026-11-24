@@ -26,7 +26,7 @@ PLAT = 0.5          # |gap| < 0,5 % = plat (definition du classeur)
 JOURS_GARDES = 90   # profondeur de l historique des predictions
 POINTS_GARDES = 150
 OBJECTIF = 30       # nombre de predictions tranchees avant le verdict de la regle
-REGLE = "v3.8"
+REGLE = "v3.9"
 JOURS = ["LUNDI", "MARDI", "MERCREDI", "JEUDI", "VENDREDI", "SAMEDI", "DIMANCHE", "WEEK-END"]
 NOMS = {"matin": "Matin", "ouverture": "Avant l'ouverture", "point": "Verdicts de l'ouverture",
         "cloture": "Soir", "prep": "Prédictions préparées", "scan": "Brief de la semaine"}
@@ -94,7 +94,36 @@ def decoupe_raisonnement(texte):
     return corps, change, quand, releve
 
 
-def predictions(lignes, aujourd_hui):
+POIDS_PRIOR = 20  # cas fictifs au niveau annonce : la proba mesuree ne s'ecarte qu'avec des cas reels
+
+
+def calibration(banc):
+    """Reussite reelle des avis passes selon la proba annoncee, lue dans le banc d'essai (tout l'historique).
+
+    Recalculee chaque matin par le banc : la proba affichee suit les resultats. Ramenee vers l'annonce
+    quand la tranche a peu de cas ; jamais sous 51 (une direction est toujours donnee).
+    """
+    tab = []
+    for t in ((((banc or {}).get("calibration") or {}).get("tout") or {}).get("tranches") or []):
+        m = re.findall(r"\d+", t.get("annonce") or "")
+        if not m:
+            continue
+        lo, hi = int(m[0]), (int(m[1]) if len(m) > 1 else 100)
+        j, n, a = t.get("justes") or 0, t.get("tranches") or 0, t.get("annonce_moyen") or (lo + hi) / 2.0
+        mesure = (j + a / 100.0 * POIDS_PRIOR) / (n + POIDS_PRIOR)
+        tab.append({"de": lo, "a": hi, "justes": j, "cas": n, "proba": int(round(max(51.0, min(85.0, 100 * mesure))))})
+    return tab
+
+
+def proba_calibree(tab, p):
+    for t in tab:
+        if t["de"] <= p <= t["a"]:
+            return t["proba"]
+    return p
+
+
+def predictions(lignes, aujourd_hui, banc=None):
+    calib = calibration(banc)
     limite = (aujourd_hui - datetime.timedelta(days=JOURS_GARDES)).isoformat()
     veille = (aujourd_hui - datetime.timedelta(days=4)).isoformat()
     sortie = []
@@ -111,6 +140,9 @@ def predictions(lignes, aujourd_hui):
             proba = nombre(r.get("avis_proba"))
         if sens not in ("H", "B") or proba is None:
             continue
+        annoncee = proba
+        if not officielle:
+            proba = proba_calibree(calib, proba)
         gap = nombre(r.get("gap_pct"))
         if officielle:
             statut = {"Juste": "juste", "Eroné": "faux", "Erroné": "faux", "Plat": "plat",
@@ -132,7 +164,7 @@ def predictions(lignes, aujourd_hui):
             "statut": statut, "gap": gap, "cours": nombre(r.get("spot")), "cible": nombre(r.get("cible")),
             "gap_typique": nombre(r.get("gap_typique")), "options": nombre(r.get("implicite")),
             "cap_md": nombre(r.get("cap_md")), "secteur": r.get("secteur") or "",
-            "quand": quand, "raisons": raisons, "change_si": change, "cours_quand": cours_quand,
+            "annoncee": annoncee, "quand": quand, "raisons": raisons, "change_si": change, "cours_quand": cours_quand,
         })
     sortie.sort(key=lambda p: (p["date"], p["seance"] or "", not p["officielle"], -p["proba"], p["ticker"] or ""))
     return sortie
@@ -178,6 +210,9 @@ def score(lignes, banc):
         "liste": tranchees[::-1],
         "avis55": avis,
         "profils": profils,
+        "calibration": calibration(banc),
+        "criteres": [{"case": c.get("case"), "justes": c.get("justes"), "sur": c.get("sur"), "taux": c.get("taux")}
+                     for c in (((banc or {}).get("correlation") or {}).get("cases") or [])],
         "banc_calcule_le": iso_utc((banc or {}).get("calcule_le")),
     }
 
@@ -248,7 +283,7 @@ def main():
     publique = coffre.cle_publique(site)
     maintenant = datetime.datetime.now(datetime.timezone.utc)
     if lignes:
-        coffre.ecris_donnee(site, "predictions", predictions(lignes, maintenant.date()), publique)
+        coffre.ecris_donnee(site, "predictions", predictions(lignes, maintenant.date(), meta.get("banc")), publique)
         coffre.ecris_donnee(site, "score", score(lignes, meta.get("banc")), publique)
     # L'archive des points et les alertes vivent en clair dans <export>/appli (la base privee),
     # jamais en clair dans le site : les scripts ne savent pas relire ce qu'ils ont chiffre.
