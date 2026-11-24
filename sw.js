@@ -1,5 +1,5 @@
 /* Service worker de l'appli Bourse : réseau d'abord (les mises à jour arrivent tout de suite), copie locale en secours hors ligne. */
-const VERSION = "v1";
+const VERSION = "v2";
 const COQUE = ["./", "index.html", "manifest.webmanifest", "icones/icone-192.png", "icones/icone-180.png"];
 
 self.addEventListener("install", e => {

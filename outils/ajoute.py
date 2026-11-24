@@ -2,12 +2,13 @@
 """Ajoute une alerte au fil de l'appli (data/alertes.json).
 
 Usage :
-  python3 outils/ajoute.py alerte --balise RUMEUR --titre "..." --texte "..." \
+  python3 outils/ajoute.py alerte --sources <dossier_export>/appli --balise RUMEUR --titre "..." --texte "..." \
       [--ticker ZS] [--source Bloomberg] [--fiabilite "non confirmé"] [--cle zs-rachat]
 
 Balises : ALERTE, RUMEUR, MOUVEMENT, ARGENT, MACRO, INFO.
 --cle evite les doublons : une alerte de meme cle le meme jour n'est pas ajoutee deux fois.
-Le script n'ecrit que dans data/ et ne lit rien sur Internet.
+Le script ecrit dans <sources>/alertes.json (en clair, dans la base privee) ; synchro.py
+le chiffre ensuite dans le site. Il ne lit rien sur Internet.
 """
 import argparse
 import datetime
@@ -17,8 +18,6 @@ import sys
 
 BALISES = ("ALERTE", "RUMEUR", "MOUVEMENT", "ARGENT", "MACRO", "INFO")
 GARDEES = 300
-ICI = os.path.dirname(os.path.abspath(__file__))
-DATA = os.path.join(ICI, "..", "data")
 
 
 def lis(chemin, defaut):
@@ -40,6 +39,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sous = p.add_subparsers(dest="quoi", required=True)
     a = sous.add_parser("alerte")
+    a.add_argument("--sources", required=True, help="dossier des sources en clair (<export>/appli)")
     a.add_argument("--balise", required=True, choices=BALISES)
     a.add_argument("--titre", required=True)
     a.add_argument("--texte", default="")
@@ -52,7 +52,7 @@ def main():
 
     maintenant = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     heure = args.heure or maintenant
-    chemin = os.path.join(DATA, "alertes.json")
+    chemin = os.path.join(args.sources, "alertes.json")
     alertes = lis(chemin, [])
     if args.cle and any(x.get("cle") == args.cle and (x.get("ts") or "")[:10] == heure[:10] for x in alertes):
         print("deja signale aujourd'hui : %s" % args.cle)
@@ -65,9 +65,6 @@ def main():
     })
     alertes.sort(key=lambda x: x.get("ts") or "", reverse=True)
     ecris(chemin, alertes[:GARDEES])
-    etat = lis(os.path.join(DATA, "etat.json"), {})
-    etat["maj"] = maintenant
-    ecris(os.path.join(DATA, "etat.json"), etat)
     print("alerte ajoutee : %s" % args.titre)
     return 0
 

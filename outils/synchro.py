@@ -3,10 +3,14 @@
 
 Usage : python3 outils/synchro.py <dossier_export> [dossier_du_site]
 
+Si <site>/data/cle.json existe, chaque fichier de donnees est chiffre avec la cle publique.
+<dossier_export>/appli/ contient les sources en clair : points.json (archive, mise a jour par
+ce script), alertes.json (ecrit par ajoute.py) et argent.json.
+
 <dossier_export> contient journal/*.json (une ligne du Journal par fichier) et
 meta/*.json (fil_matin, fil_ouverture, fil_point, fil_cloture, fil_prep, fil_scan, banc),
 tels que l'outil ArtifactData les ecrit avec out_dir.
-Le script ne lit rien sur Internet et n'ecrit que dans <site>/data/.
+Le script ne lit rien sur Internet et n'ecrit que dans <site>/data/ et <dossier_export>/appli/.
 """
 import datetime
 import glob
@@ -14,6 +18,9 @@ import json
 import os
 import re
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import coffre  # noqa: E402
 
 PLAT = 0.5          # |gap| < 0,5 % = plat (definition du classeur)
 JOURS_GARDES = 21   # profondeur de l'onglet Predictions
@@ -228,7 +235,7 @@ def main():
         sys.exit(__doc__)
     export = sys.argv[1]
     site = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-    data = os.path.join(site, "data")
+    sources = os.path.join(export, "appli")
     lignes = []
     for f in glob.glob(os.path.join(export, "journal", "*.json")):
         r = lis(f)
@@ -238,20 +245,25 @@ def main():
     meta = {}
     for f in glob.glob(os.path.join(export, "meta", "*.json")):
         meta[os.path.basename(f)[:-5]] = lis(f)
+    publique = coffre.cle_publique(site)
     maintenant = datetime.datetime.now(datetime.timezone.utc)
     if lignes:
-        ecris(os.path.join(data, "predictions.json"), predictions(lignes, maintenant.date()))
-        ecris(os.path.join(data, "score.json"), score(lignes, meta.get("banc")))
-    ecris(os.path.join(data, "points.json"), points(meta, lis(os.path.join(data, "points.json"), [])))
+        coffre.ecris_donnee(site, "predictions", predictions(lignes, maintenant.date()), publique)
+        coffre.ecris_donnee(site, "score", score(lignes, meta.get("banc")), publique)
+    # L'archive des points et les alertes vivent en clair dans <export>/appli (la base privee),
+    # jamais en clair dans le site : les scripts ne savent pas relire ce qu'ils ont chiffre.
+    archive = points(meta, lis(os.path.join(sources, "points.json"), []))
+    ecris(os.path.join(sources, "points.json"), archive)
+    coffre.ecris_donnee(site, "points", archive, publique)
     ag = agenda(meta.get("fil_scan"))
     if ag:
-        ecris(os.path.join(data, "agenda.json"), ag)
-    for nom, vide in (("alertes.json", []), ("argent.json", {"predictions": []})):
-        if not os.path.exists(os.path.join(data, nom)):
-            ecris(os.path.join(data, nom), vide)
-    ecris(os.path.join(data, "etat.json"), {"maj": maintenant.strftime("%Y-%m-%dT%H:%M:%SZ"),
-                                            "lignes_lues": len(lignes)})
-    print("synchro : %d lignes lues, fichiers ecrits dans %s" % (len(lignes), os.path.normpath(data)))
+        coffre.ecris_donnee(site, "agenda", ag, publique)
+    coffre.ecris_donnee(site, "alertes", lis(os.path.join(sources, "alertes.json"), []), publique)
+    coffre.ecris_donnee(site, "argent", lis(os.path.join(sources, "argent.json"), {}), publique)
+    ecris(os.path.join(site, "data", "etat.json"), {"maj": maintenant.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                                                   "chiffre": publique is not None})
+    print("synchro : %d lignes lues, donnees %s dans %s" % (
+        len(lignes), "chiffrees" if publique is not None else "EN CLAIR", os.path.normpath(os.path.join(site, "data"))))
 
 
 if __name__ == "__main__":

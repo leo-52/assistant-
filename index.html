@@ -120,6 +120,20 @@ details.point .corps{padding:0 14px 12px;border-top:1px solid var(--line)}
 .jour>summary::-webkit-details-marker{display:none}
 .rdv{display:grid;grid-template-columns:88px 1fr;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
 .rdv:first-of-type{margin-top:8px} .rdv .h{font-weight:650;font-size:13px} .rdv .suite{color:var(--muted);font-size:13px;margin-top:2px}
+/* verrou */
+body.ferme nav{display:none}
+.verrou{max-width:420px;margin:28px auto 0;text-align:left}
+.verrou h2{font-size:20px;text-transform:none;letter-spacing:0;color:var(--text);margin:0 0 6px}
+.verrou p{color:var(--muted);margin:0 0 14px}
+.verrou label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
+.verrou input,.verrou textarea{width:100%;font:inherit;font-size:16px;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px}
+.verrou textarea{font:12px/1.4 ui-monospace,Menlo,monospace;height:120px;resize:vertical}
+.bouton{display:block;width:100%;margin-top:16px;padding:12px;border:0;border-radius:12px;background:var(--accent);color:#fff;font-weight:650;font-size:16px;cursor:pointer}
+@media (prefers-color-scheme: dark){.bouton{color:#05211e}}
+.bouton.second{background:var(--surface2);color:var(--text)}
+.bouton:disabled{opacity:.55;cursor:default}
+.erreur{color:var(--down);font-size:14px;margin-top:10px;min-height:1.2em}
+.lien{background:none;border:0;color:var(--muted);text-decoration:underline;font-size:13px;margin:22px auto 0;display:block;cursor:pointer}
 @media (prefers-reduced-motion: reduce){#relire.tourne svg{animation:none}}
 </style>
 </head>
@@ -189,13 +203,73 @@ function colore(texte) {
   });
 }
 
+/* ---------- coffre : déchiffrement dans le navigateur ---------- */
+/* data/cle.json : clé publique + clé privée chiffrée par le mot de passe (PBKDF2-SHA256, AES-256-GCM).
+   Chaque fichier de données : clé AES enveloppée par RSA-OAEP-256, contenu en AES-256-GCM.
+   La clé privée déverrouillée est gardée dans ce navigateur comme clé NON exportable. */
+const COFFRE = { info: null, cle: null, absent: false };
+const b64d = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const b64e = b => { const u = new Uint8Array(b); let s = ""; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
+function base() { return new Promise((ok, ko) => { const r = indexedDB.open("bourse", 1);
+  r.onupgradeneeded = () => r.result.createObjectStore("cles"); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); }); }
+async function baseLis(k) { try { const db = await base(); return await new Promise(ok => {
+  const q = db.transaction("cles").objectStore("cles").get(k); q.onsuccess = () => ok(q.result || null); q.onerror = () => ok(null); }); } catch { return null; } }
+async function baseEcris(k, v) { try { const db = await base(); await new Promise(ok => {
+  const tr = db.transaction("cles", "readwrite"); v === null ? tr.objectStore("cles").delete(k) : tr.objectStore("cles").put(v, k);
+  tr.oncomplete = ok; tr.onerror = ok; }); } catch {} }
+async function cleDuMotDePasse(mdp, sel, iter, usages) {
+  const brut = await crypto.subtle.importKey("raw", new TextEncoder().encode(mdp), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({ name: "PBKDF2", salt: sel, iterations: iter, hash: "SHA-256" }, brut, { name: "AES-GCM", length: 256 }, false, usages);
+}
+async function deverrouille(mdp) {
+  const i = COFFRE.info, k = await cleDuMotDePasse(mdp, b64d(i.kdf.sel), i.kdf.iter, ["decrypt"]);
+  const pkcs8 = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64d(i.iv) }, k, b64d(i.privee));   // échoue si mauvais mot de passe
+  COFFRE.cle = await crypto.subtle.importKey("pkcs8", pkcs8, { name: "RSA-OAEP", hash: "SHA-256" }, false, ["decrypt"]);
+  await baseEcris("privee-" + i.empreinte, COFFRE.cle);
+}
+async function ouvre(env) {
+  if (!env || env.chiffre !== 1) return env;
+  if (!COFFRE.cle) throw new Error("verrouillé");
+  const brute = await crypto.subtle.decrypt({ name: "RSA-OAEP" }, COFFRE.cle, b64d(env.k));
+  const aes = await crypto.subtle.importKey("raw", brute, "AES-GCM", false, ["decrypt"]);
+  return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64d(env.iv) }, aes, b64d(env.c))));
+}
+async function empreinte(texte) {
+  const h = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(texte)));
+  return [...h.slice(0, 6)].map(x => x.toString(16).padStart(2, "0")).join("");
+}
+async function creeCoffre(mdp) {
+  const paire = await crypto.subtle.generateKey({ name: "RSA-OAEP", modulusLength: 3072, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" }, true, ["encrypt", "decrypt"]);
+  const jwk = await crypto.subtle.exportKey("jwk", paire.publicKey);
+  const pkcs8 = await crypto.subtle.exportKey("pkcs8", paire.privateKey);
+  const sel = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)), iter = 600000;
+  const k = await cleDuMotDePasse(mdp, sel, iter, ["encrypt"]);
+  const info = { v: 1, empreinte: await empreinte(jwk.n), publique: { kty: "RSA", n: jwk.n, e: jwk.e, alg: "RSA-OAEP-256" },
+    kdf: { alg: "PBKDF2-SHA256", iter, sel: b64e(sel) }, iv: b64e(iv),
+    privee: b64e(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, k, pkcs8)) };
+  COFFRE.info = info;
+  COFFRE.cle = await crypto.subtle.importKey("pkcs8", pkcs8, { name: "RSA-OAEP", hash: "SHA-256" }, false, ["decrypt"]);
+  await baseEcris("privee-" + info.empreinte, COFFRE.cle);
+  return JSON.stringify(info);
+}
+
 /* ---------- chargement ---------- */
+const lisJSON = n => fetch("data/" + n + ".json?t=" + Date.now(), { cache: "no-store" })
+  .then(r => { if (r.status === 404) return null; if (!r.ok) throw new Error(r.status); return r.json(); });
 async function recharge() {
   const bouton = document.getElementById("relire"); bouton.classList.add("tourne");
-  const res = await Promise.allSettled(FICHIERS.map(n =>
-    fetch("data/" + n + ".json?t=" + Date.now(), { cache: "no-store" }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })));
-  S.souci = false;
-  res.forEach((r, i) => { if (r.status === "fulfilled") S.d[FICHIERS[i]] = r.value; else S.souci = true; });
+  try {
+    const info = await lisJSON("cle");
+    COFFRE.absent = !info;
+    if (info && (!COFFRE.info || COFFRE.info.empreinte !== info.empreinte)) {
+      COFFRE.info = info; COFFRE.cle = await baseLis("privee-" + info.empreinte);
+    }
+  } catch { /* hors ligne : on garde ce qu'on a */ }
+  if (COFFRE.cle || COFFRE.absent) {
+    const res = await Promise.allSettled(FICHIERS.map(n => lisJSON(n).then(ouvre)));
+    S.souci = false;
+    res.forEach((r, i) => { if (r.status === "fulfilled") S.d[FICHIERS[i]] = r.value; else S.souci = true; });
+  }
   S.lu = new Date();
   bouton.classList.remove("tourne");
   dessine();
@@ -203,6 +277,7 @@ async function recharge() {
 function fraicheur() {
   const el = document.getElementById("fraicheur"), maj = S.d.etat && S.d.etat.maj;
   el.classList.toggle("souci", S.souci);
+  if (!COFFRE.cle && COFFRE.info) { el.textContent = "Verrouillée"; return; }
   if (S.souci && !maj) { el.textContent = "Données illisibles, nouvelle tentative…"; return; }
   el.textContent = (S.souci ? "Hors ligne · " : "") + (maj ? "Données du " + jour(maj) + " à " + heure(maj) : "Aucune donnée");
 }
@@ -226,9 +301,53 @@ function barre() {
 function va(id) {
   S.onglet = id; garde.ecris("onglet", id); scrollTo(0, 0); dessine();
 }
+function ecranVerrou() {
+  const err = h("div", { class: "erreur", role: "alert" });
+  const mdp = h("input", { type: "password", autocomplete: "current-password", id: "mdp" });
+  const go = h("button", { class: "bouton", type: "submit" }, "Ouvrir");
+  const form = h("form", { class: "verrou", onsubmit: async e => {
+      e.preventDefault(); go.disabled = true; err.textContent = "";
+      try { await deverrouille(mdp.value); mdp.value = ""; await recharge(); }
+      catch { err.textContent = "Mot de passe incorrect."; go.disabled = false; mdp.select(); } } },
+    h("h2", null, "Appli verrouillée"), h("p", null, "Tape ton mot de passe. Ce téléphone le retiendra : tu ne le retaperas pas."),
+    h("label", { for: "mdp" }, "Mot de passe"), mdp, go, err);
+  setTimeout(() => mdp.focus(), 50);
+  return [form];
+}
+function ecranCreation() {
+  const err = h("div", { class: "erreur", role: "alert" });
+  const m1 = h("input", { type: "password", autocomplete: "new-password", id: "m1" });
+  const m2 = h("input", { type: "password", autocomplete: "new-password", id: "m2" });
+  const go = h("button", { class: "bouton", type: "submit" }, "Créer la clé");
+  const zone = h("div");
+  const form = h("form", { class: "verrou", onsubmit: async e => {
+      e.preventDefault(); err.textContent = "";
+      if (m1.value.length < 12) { err.textContent = "12 caractères au moins (quatre mots, par exemple)."; return; }
+      if (m1.value !== m2.value) { err.textContent = "Les deux mots de passe sont différents."; return; }
+      go.disabled = true; go.textContent = "Création en cours…";
+      try {
+        const texte = await creeCoffre(m1.value); m1.value = m2.value = "";
+        const ta = h("textarea", { readonly: "", "aria-label": "Clé à envoyer à Claude" }); ta.value = texte;
+        const copie = h("button", { class: "bouton", type: "button", onclick: async () => {
+          try { await navigator.clipboard.writeText(texte); copie.textContent = "Copié ✓"; } catch { ta.select(); copie.textContent = "Sélectionné : copie-le"; } } }, "Copier");
+        const partage = navigator.share && h("button", { class: "bouton second", type: "button", onclick: () => navigator.share({ text: texte }).catch(() => {}) }, "Partager");
+        form.replaceChildren(h("h2", null, "Clé créée"),
+          h("p", null, "Envoie ce texte à Claude dans la conversation « Dossier trading ». Il ne contient pas ton mot de passe : la partie secrète est chiffrée par lui."),
+          ta, copie, partage || "",
+          h("p", { style: "margin-top:14px" }, "Ce téléphone est déjà déverrouillé. Garde ton mot de passe : sans lui, les données sont illisibles."));
+      } catch { err.textContent = "Création impossible sur ce navigateur."; go.disabled = false; go.textContent = "Créer la clé"; } } },
+    h("h2", null, "Créer ton mot de passe"),
+    h("p", null, "Il chiffre les données de l'appli. Personne ne le voit, pas même Claude. S'il est perdu, les données sont perdues."),
+    h("label", { for: "m1" }, "Mot de passe (12 caractères au moins)"), m1,
+    h("label", { for: "m2" }, "Encore une fois"), m2, go, err, zone);
+  return [form];
+}
 function dessine() {
   fraicheur();
   const vue = document.getElementById("vue");
+  const ferme = !COFFRE.cle && !(COFFRE.absent && Object.keys(S.d).some(k => k !== "etat" && S.d[k]));
+  document.body.classList.toggle("ferme", ferme);
+  if (ferme) { vue.replaceChildren(...(COFFRE.info ? ecranVerrou() : ecranCreation())); return; }
   vue.replaceChildren(...({ alertes: vAlertes, points: vPoints, predictions: vPredictions, score: vScore, agenda: vAgenda }[S.onglet])());
   barre();
 }
@@ -365,6 +484,8 @@ function vScore() {
       (a.jugees || []).map(p => h("div", { class: "rang" }, h("span", { class: "mil", style: "color:var(--text);font-size:13.5px" }, p.texte, p.note && h("span", { class: "doux" }, " · " + p.note)), verdictBalise(p.statut))),
       a.fin_annee && h("div", { class: "petit doux", style: "margin-top:10px" }, "Fin d'année : médiane " + a.fin_annee.mediane + " $ · sous 40 $ : " + a.fin_annee.sous_40 + " % · plus de 50 $ : " + a.fin_annee.plus_de_50 + " % (révisé le " + jourDeDate(a.fin_annee.revise_le) + ")")));
   }
+  if (COFFRE.cle) sortie.push(h("button", { class: "lien", onclick: async () => {
+    await baseEcris("privee-" + COFFRE.info.empreinte, null); COFFRE.cle = null; S.d = {}; dessine(); } }, "Verrouiller ce téléphone"));
   return sortie.length ? sortie : [h("div", { class: "vide" }, "Aucun score pour l'instant.")];
 }
 
