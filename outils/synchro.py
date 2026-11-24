@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import coffre  # noqa: E402
 
 PLAT = 0.5          # |gap| < 0,5 % = plat (definition du classeur)
-JOURS_GARDES = 21   # profondeur de l'onglet Predictions
+JOURS_GARDES = 90   # profondeur de l historique des predictions
 POINTS_GARDES = 150
 OBJECTIF = 30       # nombre de predictions tranchees avant le verdict de la regle
 REGLE = "v3.8"
