@@ -14,8 +14,6 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: main   # toujours la derniere version, pas celle du declenchement
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -25,21 +23,17 @@ jobs:
           VAPID_PRIVEE: ${{ secrets.VAPID_PRIVEE }}
           PUSH_ABONNEMENTS: ${{ secrets.PUSH_ABONNEMENTS }}
           MINUTES: "10"
-        run: python outils/cours.py
+        run: python outils/cours.py || echo 'relève interrompue'
       - name: Publier
         run: |
           git config user.name "assistant-cours"
           git config user.email "assistant-cours@users.noreply.github.com"
-          mkdir -p /tmp/cours && cp data/cours.json data/auto_etat.json /tmp/cours/
-          # Repart toujours de la derniere version de main et y remet les deux fichiers : plus de conflit possible.
-          for essai in 1 2 3 4; do
-            git fetch --quiet origin main
-            git reset --quiet --hard origin/main
-            cp /tmp/cours/cours.json /tmp/cours/auto_etat.json data/
-            git add data/cours.json data/auto_etat.json
-            git diff --cached --quiet && exit 0
-            git commit --quiet -m "Cours $(date -u +%H:%M)"
-            git push --quiet origin HEAD:main && exit 0
-            sleep $((essai * 5))
+          git add data/cours.json data/auto_etat.json
+          git diff --cached --quiet && exit 0
+          git commit -q -m "Cours $(date -u +%H:%M)"
+          for essai in 1 2 3 4 5; do
+            git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && exit 0
+            git rebase --abort 2>/dev/null || true
+            sleep $((essai * 7))
           done
-          echo "Envoi impossible apres 4 essais : les cours partiront au prochain passage."
+          echo "envoi impossible après 5 essais : la prochaine tâche reprendra"

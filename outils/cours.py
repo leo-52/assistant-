@@ -44,7 +44,7 @@ def ecris(chemin, objet):
 
 def get_json(url):
     req = urllib.request.Request(url, headers=UA)
-    with urllib.request.urlopen(req, timeout=20) as r:
+    with urllib.request.urlopen(req, timeout=8) as r:
         return json.loads(r.read().decode("utf-8"))
 
 
@@ -142,7 +142,7 @@ def lis_flux(source, url):
     import email.utils
     import xml.etree.ElementTree as ET
     req = urllib.request.Request(url, headers=UA)
-    with urllib.request.urlopen(req, timeout=12) as r:
+    with urllib.request.urlopen(req, timeout=8) as r:
         racine = ET.fromstring(r.read())
     for item in racine.iter("item"):
         titre = (item.findtext("title") or "").strip()
@@ -316,8 +316,10 @@ def main():
     etat["envoyees"] = [x for x in etat.get("envoyees", []) if isinstance(x, list) and x[1] >= limite]
     deja = {x[0] for x in etat["envoyees"]}
     minutes = int(os.environ.get("MINUTES", "1"))
+    fin = time.time() + minutes * 60 - 50  # s'arrete toujours a l'heure, meme si une source est lente
     sortie = None
-    for i in range(minutes):
+    i = 0
+    while True:
         t0 = time.time()
         try:
             sortie, _ = tour(etat, suivi, marches, deja)
@@ -327,8 +329,11 @@ def main():
         ecris(os.path.join(data, "auto_etat.json"), etat)
         if sortie:
             coffre.ecris_donnee(SITE, "cours", sortie, coffre.cle_publique(SITE))
-        if i < minutes - 1:
-            time.sleep(max(0, 60 - (time.time() - t0)))
+        i += 1
+        if time.time() + 60 > fin:
+            break
+        time.sleep(max(0, 60 - (time.time() - t0)))
+    print("%d passages" % i)
 
 
 if __name__ == "__main__":
