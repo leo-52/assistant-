@@ -14,6 +14,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main   # toujours la derniere version, pas celle du declenchement
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -28,5 +30,16 @@ jobs:
         run: |
           git config user.name "assistant-cours"
           git config user.email "assistant-cours@users.noreply.github.com"
-          git add data/cours.json data/auto_etat.json
-          git diff --cached --quiet || (git commit -m "Cours $(date -u +%H:%M)" && git pull --rebase --quiet && git push --quiet)
+          mkdir -p /tmp/cours && cp data/cours.json data/auto_etat.json /tmp/cours/
+          # Repart toujours de la derniere version de main et y remet les deux fichiers : plus de conflit possible.
+          for essai in 1 2 3 4; do
+            git fetch --quiet origin main
+            git reset --quiet --hard origin/main
+            cp /tmp/cours/cours.json /tmp/cours/auto_etat.json data/
+            git add data/cours.json data/auto_etat.json
+            git diff --cached --quiet && exit 0
+            git commit --quiet -m "Cours $(date -u +%H:%M)"
+            git push --quiet origin HEAD:main && exit 0
+            sleep $((essai * 5))
+          done
+          echo "Envoi impossible apres 4 essais : les cours partiront au prochain passage."
