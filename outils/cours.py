@@ -73,10 +73,9 @@ def envoie(titre, texte, tag):
     if not cle or not abos:
         print("pas de secrets d'envoi : alerte non envoyée :", titre, texte)
         return
-    import base64
     from py_vapid import Vapid
     from pywebpush import WebPushException, webpush
-    vapid = Vapid.from_raw(base64.urlsafe_b64decode(cle + "=" * (-len(cle) % 4)))
+    vapid = Vapid.from_string(cle)
     abonnements = json.loads(abos)
     if isinstance(abonnements, dict):
         abonnements = [abonnements]
@@ -84,10 +83,12 @@ def envoie(titre, texte, tag):
     for ab in abonnements:
         try:
             webpush(subscription_info=ab, data=charge, vapid_private_key=vapid,
-                    vapid_claims={"sub": "https://leo-52.github.io/assistant-/"}, ttl=3 * 3600)
+                    vapid_claims={"sub": "https://leo-52.github.io"}, ttl=3 * 3600)
             print("envoyé :", titre)
         except WebPushException as e:
-            print("échec d'envoi :", getattr(e.response, "status_code", None))
+            print("échec d'envoi :", getattr(e.response, "status_code", None), str(e)[:200])
+        except Exception as e:  # un envoi raté ne doit jamais faire échouer la relève des cours
+            print("échec d'envoi :", e)
 
 
 def main():
@@ -150,7 +151,10 @@ def main():
         h = hashlib.sha256(cle.encode()).hexdigest()[:16]
         if h in deja:
             continue
-        envoie(titre, texte, "auto")
+        try:
+            envoie(titre, texte, "auto")
+        except Exception as e:
+            print("envoi impossible :", e)
         deja.add(h)
     etat["envoyees"] = sorted(deja)
     coffre.ecris_donnee(SITE, "cours", sortie, coffre.cle_publique(SITE))
