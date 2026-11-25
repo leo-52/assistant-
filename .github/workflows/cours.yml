@@ -1,7 +1,7 @@
 name: Cours et alertes
 on:
   schedule:
-    - cron: "*/10 13-20 * * 1-5"   # toutes les 10 min, 14h-22h heure de Paris (heure d'hiver)
+    - cron: "*/5 * * * *"   # une tache toutes les 5 min (au plus une en attente) ; chacune tourne 10 min et refait un passage chaque minute
   workflow_dispatch:
 permissions:
   contents: write
@@ -11,7 +11,7 @@ concurrency:
 jobs:
   cours:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -22,6 +22,7 @@ jobs:
         env:
           VAPID_PRIVEE: ${{ secrets.VAPID_PRIVEE }}
           PUSH_ABONNEMENTS: ${{ secrets.PUSH_ABONNEMENTS }}
+          MINUTES: "10"
         run: python outils/cours.py
       - name: Publier
         run: |
