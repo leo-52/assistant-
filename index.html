@@ -145,6 +145,7 @@ body.ferme main{padding-bottom:calc(env(safe-area-inset-bottom) + 28px)}
 <script>
 "use strict";
 const VERSIONS = [
+  ["1.7", "25/11/2026", ["Cours en direct toutes les 10 minutes pendant la séance (14h-22h) : indices, argent, or et chaque société à venir.", "Alertes automatiques : grosse variation d'un titre suivi, d'un indice, de l'argent ou de l'or, et cotes Polymarket qui bougent fort."]],
   ["1.6", "25/11/2026", ["Notifications de l'appli elle-même : Menu, Activer les notifications."]],
   ["1.5", "25/11/2026", ["Barre des rubriques fixe en bas, libellés qui ne se chevauchent plus.", "Stats : ce que vaut chaque critère.", "Règle v3.9 : seuls les critères A, C, D, E comptent ; nouveau compteur."]],
   ["1.4", "24/11/2026", ["Prédictions : ce qui arrive le plus tôt en haut ; celles déjà ouvertes et pas encore jugées passent dans un bloc en bas."]],
@@ -320,6 +321,7 @@ async function recharge() {
     const res = await Promise.allSettled(FICHIERS.map(n => lisJSON(n).then(ouvre)));
     S.souci = false;
     res.forEach((r, i) => { if (r.status === "fulfilled") S.d[FICHIERS[i]] = r.value; else S.souci = true; });
+    try { S.d.cours = await ouvre(await lisJSON("cours")); } catch (e) { /* cours facultatifs */ }
   }
   dessine();
 }
@@ -347,16 +349,30 @@ function dessine() {
 
 /* ---------- Aujourd'hui ---------- */
 const ORDRE_POINTS = { matin: 1, ouverture: 2, point: 3, prep: 4, cloture: 5, scan: 0 };
+/* Cours rafraichis par GitHub toutes les 10 minutes (data/cours.json). */
+function coursDe(t) { const c = S.d.cours; return c && c.titres ? c.titres[t] : null; }
+function bandeauCours() {
+  const c = S.d.cours; if (!c || !c.indices) return "";
+  const ordre = ["^FCHI", "^GDAXI", "^GSPC", "^IXIC", "^DJI", "^N225", "SI=F", "GC=F"].filter(k => c.indices[k]);
+  if (!ordre.length) return "";
+  return h("details", { class: "bloc", open: true },
+    h("summary", null, h("span", { class: "t" }, "Marchés"), h("span", { class: "d" }, "à " + heure(c.maj))),
+    h("div", { class: "contenu" }, h("dl", { class: "fiche" }, ordre.map(k => { const x = c.indices[k];
+      return [h("dt", null, x.nom), h("dd", null, nb(x.prix, x.prix >= 1000 ? 0 : 2) + "  ", h("span", { class: x.var >= 0 ? "h" : "b" }, pct(x.var)))]; })),
+      (c.polymarket || []).length ? h("dl", { class: "fiche" }, c.polymarket.map(m => [h("dt", null, m.libelle || m.question),
+        h("dd", null, (m.issues || []).map((o, i) => o + " " + m.cotes[i] + " %").join(" · "))])) : ""));
+}
 function vJour() {
+  const bandeau = bandeauCours();
   const pts = (S.d.points || []).filter(p => p.type !== "prep");
   const jours = [...new Set(pts.map(p => p.date))].sort().reverse();
-  if (!jours.length) return [h("p", { class: "vide" }, "Aucun point pour l'instant.")];
+  if (!jours.length) return [bandeau, h("p", { class: "vide" }, "Aucun point pour l'instant.")];
   if (!jours.includes(S.jour)) S.jour = jours[0];
   const sel = h("select", { class: "choix", "aria-label": "Jour", onchange: e => { S.jour = e.target.value; dessine(); } },
     jours.slice(0, 30).map(j => { const o = h("option", { value: j }, jourLong(j)); if (j === S.jour) o.selected = true; return o; }));
   const duJour = pts.filter(p => p.date === S.jour).sort((a, b) => (ORDRE_POINTS[b.type] || 0) - (ORDRE_POINTS[a.type] || 0));
   const pred = enJeu();
-  return [h("div", { class: "filtres" }, sel),
+  return [h("div", { class: "filtres" }, sel), bandeau,
     pred.length ? h("p", { class: "chapo" }, "À venir : " + resumeJeu(pred) + ". ", h("a", { href: "#", onclick: e => { e.preventDefault(); S.r = "pred"; dessine(); } }, "Voir les prédictions")) : "",
     ...duJour.map((p, i) => h("details", { class: "bloc", open: i === 0 },
       h("summary", null, h("span", { class: "t" }, p.nom || p.type), p.heure && h("span", { class: "d" }, heure(p.heure))),
@@ -383,15 +399,17 @@ function libelleSeance(date, seance) {
 }
 function lignePred(p) {
   const ecart = p.cours && p.cible ? (p.cible / p.cours - 1) * 100 : null;
+  const direct = coursDe(p.ticker);
   const quand = (p.quand || "").replace(/,? ?conférence.*$/i, "").replace(/^~/, "vers ").trim();
   return h("details", { class: "pred" },
     h("summary", null,
       h("span", { class: "tic" }, p.ticker),
       h("span", { class: "sens " + (p.sens === "H" ? "h" : "b") }, sensTxt(p.sens) + " " + p.proba + " %", p.officielle ? h("span", { class: "marque" }, "officielle") : ""),
       h("span", { class: "quand" }, quand || "heure non annoncée"),
-      h("span", { class: "ligne2" }, p.cible != null ? "cible " + nb(p.cible) + " $ (" + pct(ecart) + ")" : "", p.secteur ? (p.cible != null ? " · " : "") + p.secteur : "")),
+      h("span", { class: "ligne2" }, direct ? h("span", null, nb(direct.prix) + " $ ", h("span", { class: direct.var >= 0 ? "h" : "b" }, pct(direct.var)), " · ") : "", p.cible != null ? "cible " + nb(p.cible) + " $ (" + pct(ecart) + ")" : "", p.secteur ? (p.cible != null ? " · " : "") + p.secteur : "")),
     h("dl", { class: "fiche" },
       h("dt", null, "Publication"), h("dd", null, p.quand || "heure non annoncée"),
+      direct && [h("dt", null, "En direct"), h("dd", null, nb(direct.prix) + " $  ", h("span", { class: direct.var >= 0 ? "h" : "b" }, pct(direct.var)), h("span", { class: "pale petit" }, "  à " + heure(direct.heure)))],
       p.cours != null && [h("dt", null, "Cours"), h("dd", null, nb(p.cours) + " $", p.cours_quand ? h("span", { class: "pale petit" }, "  relevé " + p.cours_quand) : "")],
       p.cible != null && [h("dt", null, "Cible"), h("dd", null, nb(p.cible) + " $  ", h("span", { class: ecart > 0 ? "h" : "b" }, pct(ecart)))],
       p.options != null && [h("dt", null, "Mouvement attendu"), h("dd", null, "± " + nb(p.options, 1) + " % selon les options")],

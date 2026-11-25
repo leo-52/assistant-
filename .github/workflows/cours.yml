@@ -1,0 +1,31 @@
+name: Cours et alertes
+on:
+  schedule:
+    - cron: "*/10 13-20 * * 1-5"   # toutes les 10 min, 14h-22h heure de Paris (heure d'hiver)
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: cours
+  cancel-in-progress: false
+jobs:
+  cours:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet cryptography pywebpush
+      - name: Cours, Polymarket et alertes
+        env:
+          VAPID_PRIVEE: ${{ secrets.VAPID_PRIVEE }}
+          PUSH_ABONNEMENTS: ${{ secrets.PUSH_ABONNEMENTS }}
+        run: python outils/cours.py
+      - name: Publier
+        run: |
+          git config user.name "assistant-cours"
+          git config user.email "assistant-cours@users.noreply.github.com"
+          git add data/cours.json data/auto_etat.json
+          git diff --cached --quiet || (git commit -m "Cours $(date -u +%H:%M)" && git pull --rebase --quiet && git push --quiet)

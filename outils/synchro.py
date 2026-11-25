@@ -283,7 +283,14 @@ def main():
     publique = coffre.cle_publique(site)
     maintenant = datetime.datetime.now(datetime.timezone.utc)
     if lignes:
-        coffre.ecris_donnee(site, "predictions", predictions(lignes, maintenant.date(), meta.get("banc")), publique)
+        preds = predictions(lignes, maintenant.date(), meta.get("banc"))
+        coffre.ecris_donnee(site, "predictions", preds, publique)
+        # Tickers a suivre en direct par GitHub (outils/cours.py) : publications encore a venir + suivis en plus.
+        # En clair (le script de GitHub n'a pas le mot de passe) : seulement des symboles boursiers.
+        plus = lis(os.path.join(sources, "suivi.json"), {}) or {}
+        tickers = [p["ticker"] for p in preds if p.get("statut") == "attente" and p.get("ticker")]
+        tickers += [t for t in plus.get("tickers", []) if t]
+        ecris(os.path.join(site, "data", "suivi.json"), {"tickers": list(dict.fromkeys(t.upper() for t in tickers))[:40]})
         coffre.ecris_donnee(site, "score", score(lignes, meta.get("banc")), publique)
     # L'archive des points et les alertes vivent en clair dans <export>/appli (la base privee),
     # jamais en clair dans le site : les scripts ne savent pas relire ce qu'ils ont chiffre.
