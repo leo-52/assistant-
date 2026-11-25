@@ -1,15 +1,3 @@
 {
- "tickers": [
-  "AMBA",
-  "DELL",
-  "HPQ",
-  "NTNX",
-  "WDAY",
-  "ADSK",
-  "URBN",
-  "BZ",
-  "DE",
-  "GDS",
-  "LI"
- ]
+ "tickers": []
 }
