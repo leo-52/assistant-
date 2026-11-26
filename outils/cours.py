@@ -98,9 +98,7 @@ GRAVES = [  # (expression en minuscules, fait court, consequence)
     ("declares war", "Déclaration de guerre", GUERRE), ("déclare la guerre", "Déclaration de guerre", GUERRE), ("state of war", "État de guerre", GUERRE),
     ("invades", "Invasion", GUERRE), ("invasion of", "Invasion", GUERRE), ("invasion de", "Invasion", GUERRE),
     ("missile strike", "Frappe de missiles", GUERRE), ("missiles hit", "Frappe de missiles", GUERRE), ("frappe de missile", "Frappe de missiles", GUERRE),
-    ("attack on", "Attaque", CRISE), ("attacked", "Attaque", CRISE), ("attaque contre", "Attaque", CRISE), ("attaqué", "Attaque", CRISE),
-    ("bombing", "Bombardement", CRISE), ("bombardement", "Bombardement", CRISE), ("bomb ", "Bombe", CRISE), ("bombe ", "Bombe", CRISE),
-    ("explosion at", "Explosion", CRISE), ("explosion à", "Explosion", CRISE), ("drone attack", "Attaque de drones", CRISE),
+    ("bombing", "Bombardement", CRISE), ("bombardement", "Bombardement", CRISE), ("drone attack", "Attaque de drones", CRISE), ("military attack", "Attaque militaire", GUERRE), ("air strike", "Frappe aérienne", GUERRE), ("airstrike", "Frappe aérienne", GUERRE), ("frappe aérienne", "Frappe aérienne", GUERRE), ("attaque militaire", "Attaque militaire", GUERRE),
     ("blockade of taiwan", "Blocus de Taïwan", GUERRE), ("taiwan blockade", "Blocus de Taïwan", GUERRE), ("blocus de taïwan", "Blocus de Taïwan", GUERRE),
     ("strait of hormuz", "Détroit d'Ormuz", "pétrole et or vont monter, indices vont baisser"), ("détroit d'ormuz", "Détroit d'Ormuz", "pétrole et or vont monter, indices vont baisser"),
     ("terror attack", "Attentat", CRISE), ("terrorist attack", "Attentat", CRISE), ("attentat", "Attentat", CRISE),
@@ -226,6 +224,9 @@ def envoie(titre, texte, tag):
             print("échec d'envoi :", e)
 
 
+PUBLIQUE = coffre.cle_publique(SITE)
+
+
 def tour(etat, suivi, marches, deja):
     """Un passage complet : cours, Polymarket, titres. Renvoie (sortie, nombre de nouvelles alertes envoyees)."""
     maintenant = datetime.datetime.now(datetime.timezone.utc)
@@ -279,7 +280,8 @@ def tour(etat, suivi, marches, deja):
     tranche = "%s-%d" % (jour, maintenant.hour // 3)  # une meme idee une fois par tranche de 3 heures
     for f in flashs(maintenant):
         sortie["flash"].append(f)
-        alertes.append((f["cle"] + "|" + tranche, f["fait"], "Conséquence : " + f["consequence"] + " · " + f["source"]))
+        texte = f["titre"].rsplit(" - ", 1)[0][:150] + "\nConséquence : " + f["consequence"] + " · " + f["source"]
+        alertes.append((f["cle"] + "|" + tranche, f["fait"], texte))
     a_envoyer = []
     for cle, titre, texte in alertes:
         h = hashlib.sha256(cle.encode()).hexdigest()[:16]
@@ -288,6 +290,12 @@ def tour(etat, suivi, marches, deja):
         deja.add(h)
         etat["envoyees"].append([h, jour])
         a_envoyer.append((titre, texte))
+        try:
+            entree = {"ts": maintenant.strftime("%Y-%m-%dT%H:%M:%SZ"), "titre": titre, "texte": texte}
+            etat.setdefault("journal", []).insert(0, {"e": coffre.enveloppe(PUBLIQUE, entree)})
+            etat["journal"] = etat["journal"][:150]
+        except Exception as e:
+            print("historique impossible :", e)
     nouvelles = len(a_envoyer)
     if nouvelles > 3:  # jamais plus de 3 notifications d'un coup : le reste regroupe en une seule
         reste = a_envoyer[2:]

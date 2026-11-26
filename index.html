@@ -145,7 +145,7 @@ body.ferme main{padding-bottom:calc(env(safe-area-inset-bottom) + 28px)}
 <script>
 "use strict";
 const VERSIONS = [
-  ["1.8", "26/11/2026", ["Historique : le compte ne retient que les prédictions validées (officielles) ; les avis restent affichés, en plus pâle, sans compter.", "Stats : prédictions du matin (argent et un indice, en intraday), justes ou fausses, et la réussite par actif.", "Bandeau rouge si les notifications sont coupées sur ce téléphone, ou si Claude n'a pas le bon code."]],
+  ["1.8", "26/11/2026", ["News : les alertes automatiques envoyées par notification y sont gardées.", "Historique : le compte ne retient que les prédictions validées (officielles) ; les avis restent affichés, en plus pâle, sans compter.", "Stats : prédictions du matin (argent et un indice, en intraday), justes ou fausses, et la réussite par actif.", "Bandeau rouge si les notifications sont coupées sur ce téléphone, ou si Claude n'a pas le bon code."]],
   ["1.7", "25/11/2026", ["Cours en direct toutes les 10 minutes pendant la séance (14h-22h) : indices, argent, or et chaque société à venir.", "Alertes automatiques : grosse variation d'un titre suivi, d'un indice, de l'argent ou de l'or, et cotes Polymarket qui bougent fort."]],
   ["1.6", "25/11/2026", ["Notifications de l'appli elle-même : Menu, Activer les notifications."]],
   ["1.5", "25/11/2026", ["Barre des rubriques fixe en bas, libellés qui ne se chevauchent plus.", "Stats : ce que vaut chaque critère.", "Règle v3.9 : seuls les critères A, C, D, E comptent ; nouveau compteur."]],
@@ -324,6 +324,8 @@ async function recharge() {
     res.forEach((r, i) => { if (r.status === "fulfilled") S.d[FICHIERS[i]] = r.value; else S.souci = true; });
     try { S.d.cours = await ouvre(await lisJSON("cours")); } catch (e) { /* cours facultatifs */ }
     try { S.d.matin = await ouvre(await lisJSON("matin")); } catch (e) { /* facultatif */ }
+    try { const ae = await lisJSON("auto_etat"); S.d.auto = (await Promise.all((ae.journal || []).map(x => ouvre(x.e).catch(() => null)))).filter(Boolean)
+      .map(a => ({ ts: a.ts, balise: "AUTO", titre: a.titre, texte: a.texte, source: "alerte automatique" })); } catch (e) { /* facultatif */ }
   }
   dessine();
 }
@@ -460,10 +462,10 @@ function vPred() {
 
 /* ---------- News ---------- */
 function vNews() {
-  const al = S.d.alertes || [];
+  const al = [...(S.d.alertes || []), ...(S.d.auto || [])].sort((a, b) => (b.ts || "").localeCompare(a.ts || ""));
   const types = ["tout", ...new Set(al.map(a => a.balise))];
   const sel = h("select", { class: "choix", "aria-label": "Type", onchange: e => { S.filtreN = e.target.value; dessine(); } },
-    types.map(t => { const o = h("option", { value: t }, t === "tout" ? "Toutes les news" : t[0] + t.slice(1).toLowerCase()); if (t === S.filtreN) o.selected = true; return o; }));
+    types.map(t => { const o = h("option", { value: t }, t === "tout" ? "Toutes les news" : t === "AUTO" ? "Alertes automatiques" : t[0] + t.slice(1).toLowerCase()); if (t === S.filtreN) o.selected = true; return o; }));
   const liste = al.filter(a => S.filtreN === "tout" || a.balise === S.filtreN);
   if (!liste.length) return [h("div", { class: "filtres" }, sel), h("p", { class: "vide" }, "Aucune news pour l'instant. Seules les alertes importantes arrivent ici : grande société qui bouge de 10 % ou plus, nouvelle fiable qui peut faire bouger un titre.")];
   const parJour = new Map(); liste.forEach(a => { const j = cle(new Date(a.ts)); if (!parJour.has(j)) parJour.set(j, []); parJour.get(j).push(a); });
@@ -471,7 +473,7 @@ function vNews() {
     h("summary", null, h("span", { class: "t" }, jourLong(j)), h("span", { class: "d" }, l.length + " news")),
     h("div", { class: "contenu" }, l.map(a => h("div", { style: "padding:8px 0;border-bottom:1px solid var(--trait2)" },
       h("div", { class: "petit gris" }, heure(a.ts) + (a.ticker ? " · " + a.ticker : "") + (a.fiabilite ? " · " + a.fiabilite : "") + (a.source ? " · " + a.source : "")),
-      h("div", { class: "fort" }, colore(a.titre || "")), a.texte && h("div", { class: "petit" }, colore(a.texte)))))))];
+      h("div", { class: "fort" }, colore(a.titre || "")), a.texte && h("div", { class: "petit", style: "white-space:pre-line" }, colore(a.texte)))))))];
 }
 
 /* ---------- Historique ---------- */
