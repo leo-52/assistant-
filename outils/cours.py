@@ -180,6 +180,19 @@ def classe(titre, source):
     return None
 
 
+# Google News regroupe tous les medias : on ne garde que les titres de ces medias fiables (nom apres le dernier « - »).
+FIABLES = ("reuters", "associated press", "ap news", "bloomberg", "cnbc", "wall street journal", "wsj", "financial times", "ft.com",
+           "bbc", "afp", "france 24", "le monde", "les echos", "le figaro", "franceinfo", "nikkei", "marketwatch", "barron's",
+           "new york times", "washington post", "the guardian", "axios", "politico", "dow jones", "handelsblatt", "der spiegel")
+
+
+def fiable(source, titre):
+    if not source.startswith("Google News"):
+        return True  # flux propres a un media fiable (BBC, CNBC, Le Monde, Fed, BCE)
+    media = titre.rsplit(" - ", 1)[1].lower() if " - " in titre else ""
+    return any(m in media for m in FIABLES)
+
+
 def flashs(maintenant):
     vus, sortie = set(), []
     for source, url in FLUX:
@@ -190,7 +203,7 @@ def flashs(maintenant):
             continue
         for titre, quand, lien in items:
             bas = titre.lower()
-            if not titre or bas in vus or (maintenant - quand).total_seconds() > 90 * 60:
+            if not titre or bas in vus or (maintenant - quand).total_seconds() > 90 * 60 or not fiable(source, titre):
                 continue
             vus.add(bas)
             c = classe(titre, source)
@@ -280,7 +293,7 @@ def tour(etat, suivi, marches, deja):
     tranche = "%s-%d" % (jour, maintenant.hour // 3)  # une meme idee une fois par tranche de 3 heures
     for f in flashs(maintenant):
         sortie["flash"].append(f)
-        texte = f["titre"].rsplit(" - ", 1)[0][:150] + "\nConséquence : " + f["consequence"] + " · " + f["source"]
+        texte = f["titre"].rsplit(" - ", 1)[0][:150] + "\nConséquence : " + f["consequence"]
         alertes.append((f["cle"] + "|" + tranche, f["fait"], texte))
     a_envoyer = []
     for cle, titre, texte in alertes:
