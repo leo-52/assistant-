@@ -551,10 +551,25 @@
   [
    "c2563d5333fd1f65",
    "2026-11-26"
+  ],
+  [
+   "f9c7f00a73759f2a",
+   "2026-11-26"
   ]
  ],
  "poly": {
   "will-the-fed-increase-interest-rates-by-25-bps-after-the-december-2026-meeting-20260729232808636": 94,
   "will-there-be-no-change-in-fed-interest-rates-after-the-december-2026-meeting-20260729232808635": 3
- }
+ },
+ "journal": [
+  {
+   "e": {
+    "chiffre": 1,
+    "alg": "RSA-OAEP-256+A256GCM",
+    "k": "hgEJe//4G7RIYnCpStAs2ZrCJhddjyxX6OkwE4wrolxrDGjGCRdLn0hhAYILJsQbfocWMBMSRmnV4FCaEmkJWmV7RjrYvh3lmrlNW9+izI8HEFR3wZc4XCISUWlvO3rlvt9pEBdSOqibTyQTWjKg16ioxHJ4JZx+tPkYiqmhkikdxrY3VmfSO+72exmK1nEa2VVkVW2Teb4DvF92d2QoMuTThWKzSmHctTYT6ORXrNGMdqNNi3LupVX/xEItpXiWyni38aarsdF1x5I2UpmYmFwm3hiDlD4QEic+D+zX2tNjsqgsscxANptS9G1r70pnh+IN5iouDIMcq8eo7g5X1CZdRNValKVxbt4P4kp7z91aQPZj2BEktJ3WvdXNSe64KCke71phmBv5KxanrhYg3vkhx1ksS3RpguIyFPp6SwaBF/rXCPwvSmtuY/V3oMrJlTe0f7j2sGgU7fu7iOUjV06kI+zvCFw8xoMaE7P+pWqrnsig5yslm6ry2KdLYSam",
+    "iv": "NrLq52B1L8Jn908R",
+    "c": "Ax1XSOfHus8bYK583iIkTH23fcgpq6hvzXHSee83wVqQ3xp7jgZoW8PL+fPv/HFPh9RtEPOXdWJ2n85IUAra/LJDg/2Elxw6JXodR4tVqrSfvbCjYLtQqOizVv1VPkk="
+   }
+  }
+ ]
 }
