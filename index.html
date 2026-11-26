@@ -145,6 +145,7 @@ body.ferme main{padding-bottom:calc(env(safe-area-inset-bottom) + 28px)}
 <script>
 "use strict";
 const VERSIONS = [
+  ["1.8", "26/11/2026", ["Historique : le compte ne retient que les prédictions validées (officielles) ; les avis restent affichés, en plus pâle, sans compter.", "Stats : prédictions du matin (argent et un indice, en intraday), justes ou fausses, et la réussite par actif.", "Bandeau rouge si les notifications sont coupées sur ce téléphone, ou si Claude n'a pas le bon code."]],
   ["1.7", "25/11/2026", ["Cours en direct toutes les 10 minutes pendant la séance (14h-22h) : indices, argent, or et chaque société à venir.", "Alertes automatiques : grosse variation d'un titre suivi, d'un indice, de l'argent ou de l'or, et cotes Polymarket qui bougent fort."]],
   ["1.6", "25/11/2026", ["Notifications de l'appli elle-même : Menu, Activer les notifications."]],
   ["1.5", "25/11/2026", ["Barre des rubriques fixe en bas, libellés qui ne se chevauchent plus.", "Stats : ce que vaut chaque critère.", "Règle v3.9 : seuls les critères A, C, D, E comptent ; nouveau compteur."]],
@@ -161,7 +162,7 @@ const RUBRIQUES = [["jour", "Aujourd'hui"], ["pred", "Prédictions"], ["news", "
 const FICHIERS = ["alertes", "points", "predictions", "score", "agenda", "argent", "etat"];
 const NOTIFS = [["Matin, 07h30", "assistant_notif_matin"], ["Avant l'ouverture, 15h00", "assistant_notif_avant_ouverture"],
   ["Bilan de l'ouverture, vers 16h30", "assistant_notif_bilan"], ["Soir, 21h30", "assistant_notif_soir"], ["Alertes critiques", "assistant_notif_alertes"]];
-const S = { r: "pred", d: {}, souci: false, jour: null, filtreH: "tout", filtreN: "tout" };
+const S = { r: "pred", d: {}, souci: false, jour: null, filtreH: "off", filtreN: "tout" };
 
 /* ---------- outils ---------- */
 function h(nom, attrs, ...enf) {
@@ -322,6 +323,7 @@ async function recharge() {
     S.souci = false;
     res.forEach((r, i) => { if (r.status === "fulfilled") S.d[FICHIERS[i]] = r.value; else S.souci = true; });
     try { S.d.cours = await ouvre(await lisJSON("cours")); } catch (e) { /* cours facultatifs */ }
+    try { S.d.matin = await ouvre(await lisJSON("matin")); } catch (e) { /* facultatif */ }
   }
   dessine();
 }
@@ -344,7 +346,9 @@ function dessine() {
   document.body.classList.toggle("ferme", ferme);
   if (ferme) { vue.replaceChildren(...(COFFRE.info ? ecranVerrou() : ecranCreation())); return; }
   nav();
-  vue.replaceChildren(...({ jour: vJour, pred: vPred, news: vNews, histo: vHisto, stats: vStats, agenda: vAgenda }[S.r])());
+  const bandeau = S.pushSouci ? h("p", { class: "chapo", style: "border:1px solid #b3261e;color:#b3261e;border-radius:6px;padding:8px 10px" },
+    S.pushSouci, " ", h("a", { href: "#", onclick: e => { e.preventDefault(); ouvreMenu(); } }, "Ouvrir le menu")) : "";
+  vue.replaceChildren(bandeau, ...({ jour: vJour, pred: vPred, news: vNews, histo: vHisto, stats: vStats, agenda: vAgenda }[S.r])());
 }
 
 /* ---------- Aujourd'hui ---------- */
@@ -474,16 +478,18 @@ function vNews() {
 function vHisto() {
   const jug = (S.d.predictions || []).filter(p => p.statut !== "attente");
   const sel = h("select", { class: "choix", "aria-label": "Filtre", onchange: e => { S.filtreH = e.target.value; dessine(); } },
-    [["tout", "Tout"], ["off", "Prédictions officielles"], ["avis", "Avis"], ["faux", "Seulement les faux"]].map(([v, t]) => { const o = h("option", { value: v }, t); if (v === S.filtreH) o.selected = true; return o; }));
+    [["off", "Validées (officielles)"], ["tout", "Tout, avis compris"], ["avis", "Avis seuls"], ["faux", "Seulement les faux"]].map(([v, t]) => { const o = h("option", { value: v }, t); if (v === S.filtreH) o.selected = true; return o; }));
   const l = jug.filter(p => S.filtreH === "tout" || (S.filtreH === "off" && p.officielle) || (S.filtreH === "avis" && !p.officielle) || (S.filtreH === "faux" && p.statut === "faux"));
   if (!l.length) return [h("div", { class: "filtres" }, sel), h("p", { class: "vide" }, "Rien à afficher.")];
   const parJour = new Map(); l.slice().reverse().forEach(p => { if (!parJour.has(p.date)) parJour.set(p.date, []); parJour.get(p.date).push(p); });
-  return [h("div", { class: "filtres" }, sel), h("p", { class: "chapo" }, "Date de publication. Verdict au cours d'ouverture."),
+  const offs = jug.filter(p => p.officielle && p.statut !== "plat"), okOff = offs.filter(p => p.statut === "juste").length;
+  return [h("div", { class: "filtres" }, sel),
+    h("p", { class: "chapo" }, "Le compte ne retient que les prédictions validées (officielles) : " + okOff + " justes sur " + offs.length + (offs.length ? " (" + nb(100 * okOff / offs.length, 0) + " %)" : "") + ". Les avis sont affichés mais pas comptés. Date de publication, verdict au cours d'ouverture."),
     ...[...parJour].map(([j, ps], i) => {
-      const ok = ps.filter(p => p.statut === "juste").length, tr = ps.filter(p => p.statut !== "plat").length;
+      const vs = ps.filter(p => p.officielle && p.statut !== "plat"), ok = vs.filter(p => p.statut === "juste").length, tr = vs.length;
       return h("details", { class: "bloc", open: i === 0 },
-        h("summary", null, h("span", { class: "t" }, jourLong(j)), h("span", { class: "d" }, ok + " juste" + (ok > 1 ? "s" : "") + " sur " + tr)),
-        h("div", { class: "contenu" }, ps.sort((a, b) => b.officielle - a.officielle || b.proba - a.proba).map(p => h("div", { class: "rang" },
+        h("summary", null, h("span", { class: "t" }, jourLong(j)), h("span", { class: "d" }, tr ? ok + " juste" + (ok > 1 ? "s" : "") + " sur " + tr : "aucune validée")),
+        h("div", { class: "contenu" }, ps.sort((a, b) => b.officielle - a.officielle || b.proba - a.proba).map(p => h("div", { class: "rang", style: p.officielle ? null : "opacity:.55" },
           h("span", { class: "tic" }, p.ticker),
           h("span", null, h("span", { class: p.sens === "H" ? "h" : "b" }, sensTxt(p.sens)), " " + p.proba + " %", p.officielle ? h("span", { class: "marque" }, "officielle") : ""),
           h("span", { class: "gap " + (p.gap > 0 ? "h" : "b") }, pct(p.gap)),
@@ -528,6 +534,19 @@ function vStats() {
     h("p", { class: "chapo" }, "Une prédiction officielle reçoit la réussite mesurée des cas passés qui lui ressemblent."),
     h("table", { class: "t" }, h("thead", null, h("tr", null, h("th", null, "Profil"), h("th", { class: "num" }, "Cas"), h("th", { class: "num" }, "Proba"))),
       h("tbody", null, s.profils.map(p => h("tr", null, h("td", null, p.profil), h("td", { class: "num" }, p.justes + " / " + p.tranchees), h("td", { class: "num" }, p.proba + " %"))))));
+  const m = S.d.matin;
+  if (m && (m.liste || []).length) sortie.push(h("h2", null, "Prédictions du matin"),
+    h("p", { class: "chapo" }, "Chaque matin à 7h : l'argent et l'actif le plus sûr, sens de la journée en intraday (de l'ouverture à la clôture du jour ; argent de 7h30 à 22h00)."),
+    h("div", { class: "chiffres" },
+      h("div", null, h("b", null, m.justes + "/" + m.jugees), h("span", null, "justes")),
+      h("div", null, h("b", null, m.taux == null ? "—" : nb(m.taux, 0) + " %"), h("span", null, "de réussite"))),
+    (m.par_actif || []).length ? h("table", { class: "t" }, h("thead", null, h("tr", null, h("th", null, "Actif"), h("th", { class: "num" }, "Justes"), h("th", { class: "num" }, "Réussite"))),
+      h("tbody", null, m.par_actif.map(x => h("tr", null, h("td", null, x.actif), h("td", { class: "num" }, x.justes + " / " + x.jugees), h("td", { class: "num" }, x.taux == null ? "—" : nb(x.taux, 0) + " %"))))) : "",
+    h("details", { class: "bloc" }, h("summary", null, h("span", { class: "t" }, "Le détail"), h("span", { class: "d" }, m.liste.length + " prédictions")),
+      h("div", { class: "contenu" }, m.liste.map(p => h("div", { class: "rang", style: "grid-template-columns:1fr auto" },
+        h("span", null, jourLong(p.date) + " · " + p.actif + " " + (p.sens === "H" || p.sens === "hausse" ? "↑" : "↓") + " " + p.proba + " %",
+          p.variation != null ? h("span", { class: "pale" }, "  réel " + pct(p.variation)) : "", p.raison ? h("span", { class: "pale petit" }, " · " + p.raison) : ""),
+        h("span", { class: "v " + (p.verdict === "JUSTE" ? verdictCl("juste") : p.verdict === "FAUX" ? verdictCl("faux") : "") }, p.verdict || "en cours"))))));
   const a = S.d.argent;
   if (a && (a.jugees || []).length) sortie.push(h("h2", null, "Argent"),
     a.jugees.map(p => h("div", { class: "rang", style: "grid-template-columns:1fr auto" }, h("span", null, p.texte, p.note ? h("span", { class: "pale" }, " · " + p.note) : ""), h("span", { class: "v " + verdictCl(p.statut) }, verdictTxt(p.statut)))),
@@ -597,6 +616,30 @@ function blocNotif() {
   navigator.serviceWorker.ready.then(r => r.pushManager.getSubscription()).then(s => { if (s) { etat.textContent = "Activées sur ce téléphone."; active.textContent = "Afficher le code"; } }).catch(() => {});
   return zone;
 }
+/* Vérifie à chaque ouverture que ce téléphone recevra bien les notifications : permission accordée, abonnement présent,
+   et abonnement connu de Claude (data/push_ok.json ne contient que des empreintes, jamais le code lui-même). */
+async function verifiePush() {
+  const autonome = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+  if (!autonome || !("serviceWorker" in navigator) || !("PushManager" in window)) return;
+  try {
+    let souci = "";
+    const reg = await navigator.serviceWorker.ready;
+    const sub = Notification.permission === "granted" ? await reg.pushManager.getSubscription() : null;
+    if (!sub) souci = "Notifications coupées sur ce téléphone : Menu, Notifications, « Activer les notifications », puis envoie le code à Claude.";
+    else {
+      const r = await fetch("data/push_ok.json", { cache: "no-store" });
+      if (r.ok) {
+        const ok = (await r.json()).empreintes || [];
+        const o = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(sub.endpoint)));
+        const emp = [...o].map(x => x.toString(16).padStart(2, "0")).join("").slice(0, 16);
+        if (ok.length && !ok.includes(emp)) souci = "Ce téléphone a un nouveau code de notifications que Claude n'a pas : Menu, Notifications, « Afficher le code », puis envoie-le à Claude.";
+      }
+    }
+    if (souci !== (S.pushSouci || "")) { S.pushSouci = souci; dessine(); }
+  } catch (e) { /* vérification facultative */ }
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden) verifiePush(); });
+setTimeout(verifiePush, 1500);
 function fermeMenu() { document.getElementById("tiroir").classList.remove("ouvert"); document.getElementById("voile").classList.remove("ouvert"); }
 document.getElementById("ouvrirMenu").addEventListener("click", ouvreMenu);
 document.getElementById("voile").addEventListener("click", fermeMenu);

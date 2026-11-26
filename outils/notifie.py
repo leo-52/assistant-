@@ -37,7 +37,7 @@ def main():
     for i, ab in enumerate(abonnements, 1):
         try:
             webpush(subscription_info=ab, data=charge, vapid_private_key=vapid,
-                    vapid_claims={"sub": SUJET}, ttl=6 * 3600)
+                    vapid_claims={"sub": SUJET}, ttl=6 * 3600, headers={"Urgency": "high"})
             print("telephone %d : envoyé" % i)
             ok += 1
         except WebPushException as e:

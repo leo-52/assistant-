@@ -218,7 +218,7 @@ def envoie(titre, texte, tag):
     for ab in abonnements:
         try:
             webpush(subscription_info=ab, data=charge, vapid_private_key=vapid,
-                    vapid_claims={"sub": "https://leo-52.github.io"}, ttl=3 * 3600)
+                    vapid_claims={"sub": "https://leo-52.github.io"}, ttl=3 * 3600, headers={"Urgency": "high"})
             print("envoyé :", titre)
         except WebPushException as e:
             print("échec d'envoi :", getattr(e.response, "status_code", None), str(e)[:200])

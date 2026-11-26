@@ -217,6 +217,23 @@ def score(lignes, banc):
     }
 
 
+def matin(doc):
+    """Predictions intraday du matin (meta/predictions_matin) : liste et reussite par actif."""
+    liste = (doc or {}).get("liste") or []
+    liste = sorted(liste, key=lambda p: (p.get("date") or "", p.get("actif") or ""), reverse=True)
+    jugees = [p for p in liste if p.get("verdict") in ("JUSTE", "FAUX")]
+    par = {}
+    for p in jugees:
+        v = par.setdefault(p.get("actif") or "?", [0, 0])
+        v[0] += p["verdict"] == "JUSTE"
+        v[1] += 1
+    taux = lambda j, n: round(100.0 * j / n, 1) if n else None
+    justes = sum(p["verdict"] == "JUSTE" for p in jugees)
+    return {"justes": justes, "jugees": len(jugees), "taux": taux(justes, len(jugees)),
+            "par_actif": [{"actif": a, "justes": v[0], "jugees": v[1], "taux": taux(*v)} for a, v in sorted(par.items(), key=lambda x: -x[1][1])],
+            "liste": liste[:60]}
+
+
 def points(meta, existants):
     par_id = {p["id"]: p for p in existants if isinstance(p, dict) and p.get("id")}
     for nom, doc in meta.items():
@@ -300,6 +317,7 @@ def main():
     ag = agenda(meta.get("fil_scan"))
     if ag:
         coffre.ecris_donnee(site, "agenda", ag, publique)
+    coffre.ecris_donnee(site, "matin", matin(meta.get("predictions_matin")), publique)
     coffre.ecris_donnee(site, "alertes", lis(os.path.join(sources, "alertes.json"), []), publique)
     coffre.ecris_donnee(site, "argent", lis(os.path.join(sources, "argent.json"), {}), publique)
     ecris(os.path.join(site, "data", "etat.json"), {"maj": maintenant.strftime("%Y-%m-%dT%H:%M:%SZ"),
