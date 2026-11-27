@@ -627,6 +627,14 @@
   [
    "942b680352ee9e7f",
    "2026-11-26"
+  ],
+  [
+   "4c8e4a142e1fba67",
+   "2026-11-27"
+  ],
+  [
+   "dd6bfb5be266c5e9",
+   "2026-11-27"
   ]
  ],
  "poly": {
@@ -634,6 +642,24 @@
   "will-there-be-no-change-in-fed-interest-rates-after-the-december-2026-meeting-20260729232808635": 3
  },
  "journal": [
+  {
+   "e": {
+    "chiffre": 1,
+    "alg": "RSA-OAEP-256+A256GCM",
+    "k": "MDNgX177BM8IuxFkdkqu4RIofI2jnyphF1Q7P/50N0dzgkK9dF/EIFEsvQYeXhsz4poSy03Mctc0Lb9bVYg6QsoigwBNzFamQ+oZ7mD+BVNnr3aS4kt49L77b+PwdgnF++gA5mj7psDNjG/r420Q1ppyPb9hCKegtI/UtKOTyCyYxW6VcYimu1GtPNKCElKcSxHAJWMGmRZkwtZKm8yg0D0+JPT8yfVhIZHFTYGh0XvhfzZIs4n2oZnNWu+DHR99ICuVl0LrhXL975ZAKQ5UAJgqREEfyK/6ZKMhc9kMxP1/XDJU1mCvGvmwC0aNNipK1qpwumJORsjli6Q7eQ+DOt2Oh4a2NC5ERmSG8ictkmdHtGAFnZTcO3EsJhnTSFxbugPsP/bXTzWeHU9Pkntjsd1IAlxY/cwW6ohneZcWu8DB5DDCVLWFEHrnPM90qSn2hsgDF/bbIzsHPZNV75+fWIyD3w6b495DPyIUrcOZ6woJTOOuy8EfylxCIezZyTwZ",
+    "iv": "EYlrf+eOeepHRW20",
+    "c": "jDy228XKGK53Bf9lTBy9nzIyKQq1fnT2p4s/nS4hHYJy/9j7tHhe6rPhy1n/2UYOH0HeKLkJmc32wBn69YB53mLl/Eq1pfInwOvCnXs3o2sDaxqVHINthZiNL7TF7RVXHD6HKxv6hEX+vWTUNJ1QqFo7oO0bby3N5GsacgOeS7dFRxUbOuyXZv//8XaSMrPaBIJx6dLKIMHb5hUfFUvXyB6gv+hnNcPQkS81ToMOThHSKXxE3rcH7JstpdZKCBOXP7V5RD9nzEIqL4zLTyLrfKosFyaCSklFYRa5xFzY2uroBNYfCrHmx3lZ"
+   }
+  },
+  {
+   "e": {
+    "chiffre": 1,
+    "alg": "RSA-OAEP-256+A256GCM",
+    "k": "NcpVIZgDsjV1VImtkt7czJZzWQmqQGg/u7cWIdF25vL0OErJrde//xCOxnn57/vg3S2XfiD0ry6ct6P647xO5R8KlYTiXs0pxJGL4VjVa9eCJAtEECYiWg8KXd40vzRvuiKcASO6ITxqtWJMEVcmO/9z5JMJ1qBHEiQbvtRQXdI/KK1IOllvZuEg26WNMAB8S6ksOrf2rB7jEqyglWTbSpwpeGpGVpo99PNftW75lBiImkWXA1QNZkzkRnPg5C1sDZeeKLi7TFA0c9kY6r4AIbuZMVH9D6KEpgqZws1RZn7ojCS85eBhDuc1PF6I2HdG2LulTCANpVMzrWIUdkr4t8Rp2boxhCxFsO/HGLpDY6TJFt6wBUx1laQvkLx+gXik515MHGr+rugfnI27Vhhltbqe5vb7qqfdZXBGPaeI4/NM5ToSyI8xAT+auH+Js1mpvHWEQRFh4Us/12aqh4Jzfb6jOia8Mn9EIenKYoJCY5NWmoD1KQ4/m9W9CPYqouOx",
+    "iv": "oSoL/bn3ER9o3JS2",
+    "c": "L+wEdrzkp4UyK43GJtoPHXzQ2KLAPsuxX8500YCD4zvHu9K3Et/JAsAF1biHdUwO/wwdzujbOk7ZljB8F9vhiTP/JB08Psr+fKr9jBY4F8tN4nz6iILLUoUa1Eiy3wc="
+   }
+  },
   {
    "e": {
     "chiffre": 1,
