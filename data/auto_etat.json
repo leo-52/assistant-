@@ -663,6 +663,14 @@
   [
    "6ca8634d7e79bb2c",
    "2026-11-27"
+  ],
+  [
+   "8d1005ee44d591ca",
+   "2026-11-27"
+  ],
+  [
+   "e15de4f29e589b6e",
+   "2026-11-27"
   ]
  ],
  "poly": {
@@ -670,6 +678,24 @@
   "will-there-be-no-change-in-fed-interest-rates-after-the-december-2026-meeting-20260729232808635": 3
  },
  "journal": [
+  {
+   "e": {
+    "chiffre": 1,
+    "alg": "RSA-OAEP-256+A256GCM",
+    "k": "GR+JFLxh0fcbbhhG0klBEz9tra9e2Uil1lEy1z8W8jh+atGGQ/vZWwoDVYYPIpz5lUKdxLfRkD0w9rqMzMpqdWtjG2HQC3IjpAYkiL9nqxmvTMpO+w8Rh6OXYGUa1e/g0GGEhudjzSc8WCi2N5ZmJyYI8UmxyASS2DV5egluysZgjsYaJ7yaGe4sHSlIze8byZ+eb6Uiuahw1e58bR7Gx6D/FQtC5SucKvcYD+jDfg5KIkaTZHNErS1bDQgMgFzHY8YNXOLJScb6QMPzv4D7V1i/aIJWtiX00HUNv77izycT3mfLTVaBaRkZLNrv02Wjrntn4+c08WvO/TeECkDCf5A3XVc5JPerX4c8qfx5JVxkmEQ7cRR9tu3DfUVFGCD2LMdPxKe8l/lvyifZD3a9PUZ1YhvheD704vFip8aGbOae5yHaAzW9nk8P+W7MWI51pKJfjspEbuxXsH9kmkwpuTWTImYjbPsZa/mnh6LRTYpip5vhe6iQNrRvOdMcq4jI",
+    "iv": "jgWecTl7hx3YIek5",
+    "c": "HhJYaaROosiBbXoRXptyBLnLoHRZezACF7u/ql0HK56j0YWijv96HWPr7h9SgXxI5h6eDvxihwGzBQEbrIEAtXYosoOg9sGkvKv0CXSLDEPX/Pf5u18Gau92XYgXKIp8vtibFSDuR4nvCTTd7hvZTIs14baaBb7dqU1MInMOhxzWE8LA9Nbh9Z/1VUtpXT8U/zgSj3jXakZ57Gi7/gUtEIR29AiEJs8Xh1959m277i8RdorOdRwP5L4JnxMFyPXfZrBNhTBfFK85cA6Pm25eLKVWY5YqYMF3TZ6+QVohPMKe"
+   }
+  },
+  {
+   "e": {
+    "chiffre": 1,
+    "alg": "RSA-OAEP-256+A256GCM",
+    "k": "ZtkQhjH+6ghy2YO60Yv0/hidMPD8Gm9442VNuk9vbQ/at4oDTAKSKbbJSehJzndMRnHIsPVoQ4ZFp3uwkZZlKyq6UJYGgqrRQHutTSvJ3c5pgW7uxr8UQkbNJ9aiGhql8zFsx+4fQEqES3BTXYYqc58k6ahSdYlWzTohZVw4t5jQLMPODYxrFu9sMiFQjcafH84LYqA3XlFcAMEjoHr0Mm3eNL2msi/JK+fa5b0kuhMrOl+22pHYZBAtRTayNZLckLMf/eNYs1p03a+OP3hUTiSzyvuuKyzDFhVWLHMRMRjiuYZKwfMBWlaELXcGwGLHLJYMJpIZXJVs2SLBjNeM5MQEf45kbS3D2BU/ZWi037B+ngx9mh/sKknEjx4v175WlSUn2HN/0S+w55flgsTaPOqiMu1S+3SIPeh4764r3IJHukIy34cJ2d8+6PPsdZlPl5sfRoBHDZTM4El5IUNsN9EZWb49Gx+zDY24nHQSN3yxc2EaQVk8VWDrZiigiXfU",
+    "iv": "YY8LOPKwc+uwIIhY",
+    "c": "GQgdYY5yvROI0Wenm/sZ3EDcBpN1TkmPzQoPevP06/qtRhBVbGSjSrImyr+IqQas79/2kYG25Ai2oichxyIogJRmVheCXEJTisR8VNuqLf8NSsUFM9F4fAU08dz8bJ0="
+   }
+  },
   {
    "e": {
     "chiffre": 1,
