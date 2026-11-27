@@ -145,7 +145,7 @@ body.ferme main{padding-bottom:calc(env(safe-area-inset-bottom) + 28px)}
 <script>
 "use strict";
 const VERSIONS = [
-  ["1.8", "26/11/2026", ["News : les alertes automatiques envoyées par notification y sont gardées.", "Historique : le compte ne retient que les prédictions validées (officielles) ; les avis restent affichés, en plus pâle, sans compter.", "Stats : prédictions du matin (argent et un indice, en intraday), justes ou fausses, et la réussite par actif.", "Bandeau rouge si les notifications sont coupées sur ce téléphone, ou si Claude n'a pas le bon code."]],
+  ["1.8", "26/11/2026", ["Prédictions : en haut, celles du matin en intraday (argent et l'actif le plus sûr) ; la prédiction de l'argent sur plusieurs jours passe en bas, repliée.", "News : les alertes automatiques envoyées par notification y sont gardées.", "Historique : le compte ne retient que les prédictions validées (officielles) ; les avis restent affichés, en plus pâle, sans compter.", "Stats : prédictions du matin (argent et un indice, en intraday), justes ou fausses, et la réussite par actif.", "Bandeau rouge si les notifications sont coupées sur ce téléphone, ou si Claude n'a pas le bon code."]],
   ["1.7", "25/11/2026", ["Cours en direct toutes les 10 minutes pendant la séance (14h-22h) : indices, argent, or et chaque société à venir.", "Alertes automatiques : grosse variation d'un titre suivi, d'un indice, de l'argent ou de l'or, et cotes Polymarket qui bougent fort."]],
   ["1.6", "25/11/2026", ["Notifications de l'appli elle-même : Menu, Activer les notifications."]],
   ["1.5", "25/11/2026", ["Barre des rubriques fixe en bas, libellés qui ne se chevauchent plus.", "Stats : ce que vaut chaque critère.", "Règle v3.9 : seuls les critères A, C, D, E comptent ; nouveau compteur."]],
@@ -431,7 +431,22 @@ function vPred() {
   aVenir.sort((a, b) => ordreSeance(a).localeCompare(ordreSeance(b)))
     .forEach(p => { const k = p.date + "|" + p.seance; if (!groupes.has(k)) groupes.set(k, []); groupes.get(k).push(p); });
 
-  const sortie = [h("p", { class: "chapo" }, "Jugées au cours d'ouverture de Wall Street (15h30) contre la clôture de la veille. Touchez une ligne pour le détail.")];
+  const sortie = [];
+  const m = S.d.matin, auj = cle(new Date());
+  const jour = ((m && m.liste) || []).filter(p => p.date === auj).sort((x, y) => (y.actif === "Argent") - (x.actif === "Argent"));
+  if (jour.length) {
+    const SYM = { "Argent": "SI=F", "Or": "GC=F", "S&P 500": "^GSPC", "Nasdaq": "^IXIC", "Dow Jones": "^DJI", "CAC 40": "^FCHI", "DAX": "^GDAXI" };
+    const ix = (S.d.cours && S.d.cours.indices) || {};
+    sortie.push(h("section", { class: "groupe" },
+      h("div", { class: "groupe-titre" }, h("h2", null, "Aujourd'hui, en intraday"), h("span", null, "prédictions du matin")),
+      h("p", { class: "petit gris" }, "Sens de la séance du jour, de l'ouverture à la clôture (argent et or : de 7h30 à 22h00). Jugées le lendemain matin."),
+      jour.map(p => { const c = ix[SYM[p.actif]];
+        return h("dl", { class: "fiche", style: "padding-top:10px" },
+          h("dt", null, p.actif), h("dd", null, h("span", { class: p.sens === "H" ? "h" : "b" }, (p.sens === "H" ? "Hausse " : "Baisse ") + p.proba + " %"),
+            p.verdict ? h("span", { class: "marque" }, p.verdict) : "", c ? h("span", { class: "pale petit" }, "  maintenant " + nb(c.prix, c.prix >= 1000 ? 0 : 2)) : ""),
+          p.raison && [h("dt", null, "Pourquoi"), h("dd", { class: "petit" }, p.raison)]); })));
+  }
+  sortie.push(h("h2", null, "Résultats d'entreprises"), h("p", { class: "chapo" }, "Jugées au cours d'ouverture de Wall Street (15h30) contre la clôture de la veille. Touchez une ligne pour le détail."));
   for (const [k, l] of groupes) {
     const [d, s] = k.split("|");
     const off = l.filter(p => p.officielle).sort((a, b) => b.proba - a.proba);
@@ -450,8 +465,8 @@ function vPred() {
     h("summary", null, h("span", { class: "t" }, "Déjà ouvertes, verdict en attente"), h("span", { class: "d" }, String(passes.length))),
     h("div", { class: "contenu" }, passes.sort((a, b) => ordreSeance(b).localeCompare(ordreSeance(a)) || b.officielle - a.officielle || b.proba - a.proba).map(lignePred))));
   const a = S.d.argent;
-  if (a && (a.en_cours || []).length) sortie.push(h("section", { class: "groupe" },
-    h("div", { class: "groupe-titre" }, h("h2", null, "Argent"), h("span", null, "en cours")),
+  if (a && (a.en_cours || []).length) sortie.push(h("details", { class: "bloc", style: "margin-top:8px" },
+    h("summary", null, h("span", { class: "t" }, "Argent sur plusieurs jours"), h("span", { class: "d" }, "jusqu'à l'échéance")),
     a.en_cours.map(p => h("dl", { class: "fiche", style: "padding-top:12px" },
       h("dt", null, "Prédiction"), h("dd", null, h("span", { class: p.sens === "H" ? "h" : "b" }, (p.sens === "H" ? "Hausse " : "Baisse ") + p.proba + " %"), " · " + p.texte),
       h("dt", null, "Échéance"), h("dd", null, jourLong(p.echeance)),
