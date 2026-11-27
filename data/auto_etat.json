@@ -635,6 +635,14 @@
   [
    "dd6bfb5be266c5e9",
    "2026-11-27"
+  ],
+  [
+   "1a579333188a3006",
+   "2026-11-27"
+  ],
+  [
+   "3a8faf85c23da442",
+   "2026-11-27"
   ]
  ],
  "poly": {
@@ -642,6 +650,24 @@
   "will-there-be-no-change-in-fed-interest-rates-after-the-december-2026-meeting-20260729232808635": 3
  },
  "journal": [
+  {
+   "e": {
+    "chiffre": 1,
+    "alg": "RSA-OAEP-256+A256GCM",
+    "k": "kNVyD6CLJDlAIToCiuSw8mzvVLLtkvVm14vv4oMuqQgXd2LGVFQAGL+Oa9oIokcR+rPJXc4/mcrRXbQJ2BZ+viIDi2sah9l5xe8WkJIHWHkzC98HXezm3bhbMvy/dksiYoQ28sTErtG8XlhdbcizkP/gy7mK2tlt/4zkPUXNNF4N9MM8C5UihGg2G0E4N0B65XnByXSM7KUx/HksJ0LfOH+fTGWjacZUcHEhOBjtoU/2WrSpgYriyT0NaK9vsuCOBfo6JVFxbmi0NO1Xp0U3Wz1g2sTSJ+fWx7LIaUyxeFqqYRIuktfY23NCkx6r+aLym7CvHDERp+Y/LR6qHOvESSStgPrQv4J4DKsLXgyR6+zCRu+AmLaW8Rlf07lmP1I053rjZkSckgiqaehKrR1l7SMCVr9lEkuXHcbFaPZxr2qlv1g8ogxPGgRIOJ3gDZ5o0gwaBY8q8MXa9tTtAXMOiwO3VdVN7xsSS5jFRVXfDhvtvbR0x1FQpls2SytXyXH0",
+    "iv": "ba4eG8rxEPVqXt46",
+    "c": "r1sjFqZ8OxHPYNqbmy+iWnqbbiYxt9tcmrkvpV3bACZggEgyUYK8ioYqRunLMTfgPKua7+dSM/LExo9cToB/C3is7SarTtnkZxexUEj9jQ9UKCnkZxQ5Gf/LakYc"
+   }
+  },
+  {
+   "e": {
+    "chiffre": 1,
+    "alg": "RSA-OAEP-256+A256GCM",
+    "k": "mK75TuejZkMShWiaS7h8XNHBYe2zI5AwdXGtVt4TRZpkrQlatGcguUSz3hFJ7yl+qOLsibtxo9DZy9czpwT5+uPpVaLEz3SvWsUkqOi6acbfLiCxqCZyGpqF96KaA71BFXxEIe5iBZ2D4qSwRUI1KoSZnl6Tzhmt9DJncG3EkUtlMTqkQJGTHvfkZ7/HNnCBzarkZGRXY3AJ8JVbJmuXYX9V/La0roWgdEd86wFCsRZPEknOHxfZFkU00Iyk4d6Jrc1lq/iRSsWZcMVFmBA648VzRRqgSJ5FUMMx6Ximq1xnzrkRcKOkZNYe9t19Yk3Hk4sgsoDUUtHamTmKRmfkbFR+JRE/jh/ff8CEK69Wly8wFBo/Ehl19YlqHD9Ol33UtUBC8Hz7Z5wDDmUNDN4NoCPww/sU3mP2FOL3MMxx0Red+XHUD1CgLF3TdhHNQ7pETNnPlI5/Zh2FHtnd+BvN7cq+DOQC3ExGiW4TvLvFweGbfclxKQ7PuDU50Mje1Obw",
+    "iv": "4WTN8y6zWgKqjQcO",
+    "c": "7UPF7DN1fv7HkY0jRXeHbgauY/P+Tgr0JKgza02TIgwuJd3Av04H6bg9WE+Y1aIIub5dNWlD7DiWYM36afr+Qk2P85NjhSz5rpUfU8xtwvIcH12IaW8o90OfBtbNu3E="
+   }
+  },
   {
    "e": {
     "chiffre": 1,
