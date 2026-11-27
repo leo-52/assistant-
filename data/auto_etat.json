@@ -755,6 +755,26 @@
   [
    "2ca9cc7703396ce0",
    "2026-11-27"
+  ],
+  [
+   "2e00db3860882ae6",
+   "2026-11-27"
+  ],
+  [
+   "92ff48ec31a510b9",
+   "2026-11-27"
+  ],
+  [
+   "526661538b441743",
+   "2026-11-27"
+  ],
+  [
+   "e4c7deb051e6bd40",
+   "2026-11-27"
+  ],
+  [
+   "364785ca6baefe26",
+   "2026-11-27"
   ]
  ],
  "poly": {
@@ -762,6 +782,51 @@
   "will-there-be-no-change-in-fed-interest-rates-after-the-december-2026-meeting-20260729232808635": 3
  },
  "journal": [
+  {
+   "e": {
+    "chiffre": 1,
+    "alg": "RSA-OAEP-256+A256GCM",
+    "k": "kxv7FJootTv6D+zBy0GkCDCi1tRHL2/CMzNBK33Eq/MnZnPTNG0T+SC1ZpuPeTxORZBB8UeGmfyQg8w1m4QsRqdTdG9xVbYMu0fGhjyszIrg6lic89x60VcBwWzpj4DJHORKj5ImroUwB+9I+dAkvrIXeTgyz5+Z/+GfyPPZMuZeHy2dCGiVSudId51DtaSg/3tjIGJPPrvIctO8Q/cI6WphGyz6ZhOtFB8xIfzc+Gr6Teq2GMXyq59650OiukkmTn4h8DE4dS13APxEOEd/1+tv/pch+JoMhyQwP5o1W0l6VLg76aSu8i/pXVxrpTzQ96Uq34aULgEmt7aT9eR+afKh5K39LXt6ibsZMB1BZCQ3+dbTBwxmS+XTW4enpzuvBY7xpcHs22RhwsqvYlMd0VCBZN/PGO82oGnaE7QFB/FkemmWCxwk8KrfIxgqhrKJA2kpLyNCCOeer9X7RXahPbMHx68r2TlTkFHGPZTGRut+TfeDu1ofHJ1Cr1XBhpjs",
+    "iv": "P/mMU+U2DKfEZgjd",
+    "c": "Uec69eZSZjZw8CAYefo/RQrbHpsVXxWYnKGhqe+TXGPggcdm9C/lncp7luct/rFRpj4aj6ybyyM6+sjUWUORekVgxSMHIOPsQZ8p5S+EnDy9K76xNNVMayw5khokwh0CqxtS9ELgdsfcX/+eaTeKfpfEAc7jCd3pWmun7P160mS8ro3WWlb6il+JUBV6I1tISmDnntr6J4p5ihnIBSnzprThe/etMJyaBy1eXZqLjUb0AVRqZs/v6uJ7HiO/+o7tV7ZnBoR49YUdND4ux5BAVXnUUZ3Y+XVgQOypKNUe8zSVS6MRRnqDwElHXWg6kjrQxtP0+dn8UuY2PdCL94seaO2mCxeh/1MZyKjw3XBd"
+   }
+  },
+  {
+   "e": {
+    "chiffre": 1,
+    "alg": "RSA-OAEP-256+A256GCM",
+    "k": "jaWMITiooyK12d5AcN9RIcQ/F0C9SBhxDBscRs0oJ7iiOFj5b+/C3gJyB8a9027yji8z1yz+YXFPjDJ81WC3qnGd5X2aJaOkOUKOlS/x6sA9F19M7bMa2u/uFIcYf41hGwCROpVGTDfG8ffmtH0EZE1Q1Py6lXPP2jrxV5e4hhQYO9Fl/SmR4ZQ7uWO2J/H2MC1zXHYr6RDXUBWpz5ZZm0+UbHW/FOnohRsM8O5EjG1NB0J7F4r4yFNyBq9aOJK+TMEgjmurWv6rz+s537AtXTh9579JbVyC/bxSVrZUWQ38vKfqYqycO0cfNCbdCFLncnduRW72FKIuILrc/jhElbaW72ZKeGty/gu8PZ9ZE1EIFyVvJc1VW1ANvcfDt2iQz9zBKA/r65NeshcVyNRwkKFBuCieVkzdKHAaj46mgeXj8R8ux5LpoZZRia3g3redoTh58oW05dN9dcFsFWOApm1MBzVP0aah/OVHh2ZGIpIZ5b7+8o/txdHwVOtv/KF6",
+    "iv": "T+81+eqRaHrerVLz",
+    "c": "OM81Hi4pSUS9iWmFMaarEk89rg2R1Vhp6cGHWsH9AP/emCrvRtTqP76ZwrR4nNJ4bsh4+nPkqgDymV93N9SPs3AkT+ymKHn+rSXnps7o3dmbBpTCtTHEgHmVRxFyNDDI0EGqv+cb2PK6xv//P0VF0zU5nDYBQ8latvVtEnNjdO2/u8D41Ut9nUyQUASC1hifqkT6gC7v3zERYRTEiT4WxTOzHgLC4PYQh3Dg5k66ycNWv2ByRfz58KX9ZHmhLc3stkF7GBqqY6zU16ZAijrYqQ/1DkLSV1eE3KwPnQYNJJqQqul2qx+QJZcSNA1DKnPtxFmQVLeX7O0="
+   }
+  },
+  {
+   "e": {
+    "chiffre": 1,
+    "alg": "RSA-OAEP-256+A256GCM",
+    "k": "NKGgMdZe8Cg64tTGuwXcOgJN7IhnPHx8eP1+i65AOOwW4V5iXhYXacs+7+54Cwy8u/ZwYNl+gKtza6Hyfk5Ay+0nb+dcH7lgEA+ahN6MalrueDRM8//EA1lUXVN/aOhj8ROA86BF+tw8Xlo0G/ukrJr8gQ+5MZp9tHvdrmdReynrzS4HOqb1OTeCsjx9Tv+PTn06QygHOkJSyXgSUTudEYJcK0nCPowoOYQHIGcvsoknmLof8LITk3UemCeo+gmz3yqMjU5i+YI+kopQFgfPMvAGQX/iK36oBrwWiTLvXO4E9Zfqvzc8EXUjpGlK/X8d1tZ9kjBY2l92jXZyJ0VlVKQGI+OE7V4MYK2ne3LB77Ob8TmwAHVFMX9/zg+MclSfD5JUON1FxmZBv06Z43QuAOH3OvH+qVMC5Z0Oh+8lEOJvBRozkchsPH/C0HeNG5GwlB4VKpGmQ6qLaGfHldhv5lZSNOtarchECLjdIGa0YYzp5wXNvwbm7scMleHiWShh",
+    "iv": "dkVzQvo2QMC7LDy7",
+    "c": "6C4Y8EOSCj7DLJsNbcEmIN4nYlLp02b4UAPVQZtUeunV3GlE8s+WA15Up8FdwwTXZ51fYQ2N/ImOe51XqC8TL/lBRjmnCHrcoW827mH4K9zJP35xFU7N+R1A7dyyt44EhMAbwAFHFy/kXHHn2sFXolFd3oxZkl0okWtddMQSQC1IUVQqwo4QWvm1e6Yb0MTJfszK9mYGQBRTiWhRwXdfr+vtt6Cj9UWzTd77t7S23XHR+FHunmfuvHfZ3v58fIMp+f8tBoACNMjz33qKJ4kQkP8egXPEvtFzJ6zSETl7F6wZ"
+   }
+  },
+  {
+   "e": {
+    "chiffre": 1,
+    "alg": "RSA-OAEP-256+A256GCM",
+    "k": "F0klTs5ikzEXLngISRCdmJ3tcOzLj3z2pgfRQ+9Ln4L2T/0tbMbvRvTnBX4bYpdRmKvd1+CUu88p0qbIqkQ7/CSViUzb1C/g2p8Mv0XOMFSMHpxNptfdSwysI/f5YwYzpGJQbwQO08IEy8z085I1d9q8axOISpWnztpbRNSZSHGAan0FX/xN2HyH2QEJwOPRUEa3zAZiZ/jy9mEgPQqf4ezlNTnnqwkbd6/BDatBho7DPhIP7sJSzwWm4Cg3bN5fHBzBEzsjVxMnbiqmLlgh7Rj89a6FTIs7F7KrVwWT5ualzxPh3oS18NlZInSv4aAqNUgahFaUuHNo+hsDqJ1Kg3wRL/vmLse5hZOOuggjRJRCdXPV8LqyHrcpeF/iX4lcDJMtAux1IVCst4uTcRh1G0H9QP27+Jx2PIS0WA3S6tQQi6r2vMWZkKiclVWXjduEnU4tni4mb/tQ5Nfxd+EhJc0zDpgah8VcmGM8cVqfnlzRYr8RxBdlOX84pAKvTBV8",
+    "iv": "NnOozTlvJB2Q2Y72",
+    "c": "hZ2ytfTXAyRkA7gtYUQiUJkE53Nsw30E6BLJdi3AQ85QZoKiV4d1kh15ujSuycSucxnUC5Y2/jPdvQ3XrSoRFRCyJhT9UyzAuiwcbCcZY0dgdcSWXXsbY5XvhJUgvxUbH8YiZnSmlIn38gHSdxD3ARSMCe7rxQek4UogkcsVfhBiscVuWf5ClzjQpmgGpNCRxbbA1lakYbfwCfJaG9YtlEpvorhHy0ueqO/No/D6rnnnOdgmC2TRHXul4gfPc/GgD4lWbRAo7AXgKChB8yZN1QoO4SWI0cePLHVS150k3pIDuy4FedR0KE2/Zzp32cGtC//DhSRmbfVYceMvAH3eJbbiXXm5sYYx"
+   }
+  },
+  {
+   "e": {
+    "chiffre": 1,
+    "alg": "RSA-OAEP-256+A256GCM",
+    "k": "PPdUtdadQDDZawy8vI6rqouw53hUwgAWQziUEV0LLGUjTucZwoElOeqzVq6kYILu0cCdhRGNUap7lzAPm6/Xu+SgBwCOLiKOfNcPtTDO+tRdgBrfqXqd2SG9XkzdI+myliYRdJDhsS22iBGkTLj0MEo6nxJYJBKSjOVo661RSew42QXkM/wvAOBSH8ihVTxkEZf/i7rxQlDt/P6mazPlj7FKy8KvP7TIUofk2WBk/uQlsTbV688mTX+gWRBZksPtmI+Cyo3hqRA06ezioXg1iNSVm48RxfIJ9nRy3yLKkpdlV+F4GAmNpWSr/topvTfcpkaZSa7xvfCZa0tFy5/82MsTo/7uK3e3xc1M/qoSKLSII3rkKwLQWozG+/IYwdyqxPPX0K0DqQluQmvib7SvBvkB83TgIPGQDd29joEMwZL5Tcv/pkn5f9z+hBmyAfZReEw/8LBaUSBLl/YecRS/sO/mLQlqqcVjK9WdE78BxOfimRMFY4vIqt6TiWLGZMe4",
+    "iv": "PqTgUowy9izBc9Gn",
+    "c": "P1zbIpJWVhqFBU9RKlf67EPEwJzFLD19s5Z0H1o7LVDyJkbUrGdACCNrflRzeKiHU8AYRygVPz4QM7H5YKLbrx8tiwZmRFohcYwwM4etNO9oeOxGLmeBhC9Uwj3mh9egqiFXXVWg0hqO8xBlWfg2I/NH8bmed7cAN9bpJS+n1fq29FdM2fQlqrxsvWhrtAayba61nKDrhx4kU5VVPTzF0ca/ROxqV/zW3sXsVb+WLujSBue4YuJo7Wn4jROIlNAqF6PJYKPNqNn5ewKCGOqCsVP3QegT2jGX32kn5re9P48aYg+QiMY="
+   }
+  },
   {
    "e": {
     "chiffre": 1,
