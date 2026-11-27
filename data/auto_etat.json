@@ -715,6 +715,14 @@
   [
    "790d3edf3d43cb0c",
    "2026-11-27"
+  ],
+  [
+   "870c198176a2b2f8",
+   "2026-11-27"
+  ],
+  [
+   "cbd72cff2886addf",
+   "2026-11-27"
   ]
  ],
  "poly": {
@@ -722,6 +730,24 @@
   "will-there-be-no-change-in-fed-interest-rates-after-the-december-2026-meeting-20260729232808635": 3
  },
  "journal": [
+  {
+   "e": {
+    "chiffre": 1,
+    "alg": "RSA-OAEP-256+A256GCM",
+    "k": "BJADcYq8YZ38FICIoqgqkrNj5+5QOnXIgqmyQH7PIRQ/7oy4wmLehM9rDuH4l8Ix+2tmw8iusCMSmmqTeA6cL0m1TyhaA8XLpNOwJgVjyN+c0APIOIDgQsHKF/31FyYMb0rLMNM6Qli9BwMfoSnF3MPkKfXnCCfalh1kzQ5kVm4ZjNV1rpPJXZcUrYrJmsKaoW2tSR4z0MTvR/7TFnADZunIKmWqc3JChQu7MWdlJFpaHqSXVrTpxVHO0SY3gvmF/TTOx8EZRfVuA2Pl7XH6e/UuZtaPVjKT/OInjzzL5Cti+KLIyYaZRPDc6Bdq/VpUJWPi37TX5fDu0ZbDRkcJ97hzSXPSEsRFRT3ZcEgbBbAKuRQSKoU6jGf8renLyM9a+Q6V9OrIF6pRzdUIld1fMsKSnWk8e5mzKyz56XYManRxgWZ1H5Q+ptDl2KVWnvmbY5yOkKrvqqr4ymx0xp+ap2cO72xGwUMB3Yt3jCH5OkAFxqD/5BHC6grMZTwlh6cd",
+    "iv": "MD4kCmdP8zdhEhMJ",
+    "c": "lCEqkBNOj62Tbi1X3QnawdyCCzVD5AdVP9Lqa4UyI5rUchawlYaPPJ9G2I7TX9BcM6HXZgyDtCwCVE6BtGQ/O6QETtuf9w8FaYVYQxY4O0XYqqkI67an7Icatu6qjD2+f0x4mvHpl7ThGOVY591E2GjdvsBpwq+ipcmWjzdz/DF4hE2x1agrZEthyaslR0NwgrccEUsyq/c7Pu6KvNl1J6CtczB6n3pwvomBFK9p7kvdTrNWmph2rnJ1BJfCZDFz7fmFfGKQ7AKqMXq/GGubAtlFt14Dab63MRLxP9k6rDEoaKd4OfnFVaOO"
+   }
+  },
+  {
+   "e": {
+    "chiffre": 1,
+    "alg": "RSA-OAEP-256+A256GCM",
+    "k": "nrV+Dsgp3ILrK/C4jROeXjPjoh1lJ2hwEZyhMHWhMv/36kUf1IkVnnPGEb99m3qZ7LSXFcytzNuFY1Ojf97pvKOBsJCmwSQ6K+zjWdcCjwZK+iXBo2UexQERRDCPkqVKpGoBRerI+ltcX2NbJllkW1z8cJ4SFdL1+ag5S6bzglCKa09zmpZ2pnnAbJ3YH6i+ggM8A4jo8QSF71HXDNCGW0bntj35GZPlHwhv5iG3Qt6mo0UMK4186iUyuxr4uOFf+UY0WmiItcdoaxPOjMf6gNL8qDZRV4WMQWl7rCloXhx04c+KeoWEcVKc+WpO3l2sJiIJfgaAmYIgcVKZrV3sLYVQqRdixdGvabk43r1fvAIKlqdJ78sULeC3xOVeSnSAKJ7IZ9GjJxPswmN172itRCuaIPQPtPlqFIN5PzusT+9g4veiToDE8vV5TV/w9YslI8TKxZZjgw8jVcPByy63sIU7ofk84Yg5vyJnKEOp2j03jGLDR27PPEd5hqYND2QD",
+    "iv": "IoLt6ewWXWY23zXV",
+    "c": "B139T/9nqj4YRUSHduf2XJDfI+3XV94TNlmocJQgyGNJMCDILo59GQr/V9Tdmga0uIljKvhMpIFAt48FQCmCYV6VqQATaedgq1u1VoU3GYTnUNDl3ksBfwgNPtYmpc+Di1fvr84OhlplfBbf5OCQlWakSveD8XjSatPlput5Xo7FrB1rBD1IgRAVaJOtoC5E0YYbLN6zloCKL6c17MnpMzjRBdhmeBXqDgs7bZct7YlFfZc10ZCkl4r3tFlUyJZXfoOoRI1I/hCr72w7UBSrTQ3Ucm7rOQ+8NEUEo4D/OSrzbIG3RsKmBdthNlrCQLPYYiwYVK6hXen0VBJ0O4BPw1huSrjD2jgwpDRqzAP2nhyoy4VbbyGXtCVMNvA+bk/DVw=="
+   }
+  },
   {
    "e": {
     "chiffre": 1,
