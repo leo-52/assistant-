@@ -751,6 +751,10 @@
   [
    "b06167d4de50759d",
    "2026-11-27"
+  ],
+  [
+   "2ca9cc7703396ce0",
+   "2026-11-27"
   ]
  ],
  "poly": {
@@ -758,6 +762,15 @@
   "will-there-be-no-change-in-fed-interest-rates-after-the-december-2026-meeting-20260729232808635": 3
  },
  "journal": [
+  {
+   "e": {
+    "chiffre": 1,
+    "alg": "RSA-OAEP-256+A256GCM",
+    "k": "ZllK9YjN7+bj3dF5uZxHfWNEkTrBWorpdgyMoipFnSRGQy7ROBCuAlCpUfJCRi1oHb3vezUWzg1y7n+1NbM5YP68m67HMczeCy8qz7wpSBbU/lsswIi+HDPpqSVJj5KD6ex2jRMpWAr5nM+wKpEkqpqjRDnqXFoTyp8L7RhKFmFohk09mK4qD5Oytzgl0+n7gLLgZdOzNELQv7PKGJrvovgsnFeruAbKSmWqEL+6W1mdz6xaX1lDhn0a7s8/YYEf08eClc+2y40M2+kUiuIVhxwCKL1ZyJDXSTPM3eJKfranyuwuXZEJKq2L3zgzv6P7EfBWLoj2X4C2u4TOGLuIMCbIh4UcR3mNCLfeKqLdOsnztG2ny2rnWn87zH219XCaf8Dr2ub4dsrNb/1IMya768LZYaVZosYTy1I1k1d2xI+v/DriqYh6ZU9qxAZ67Gp6i0TsDTWC6QmmT4CzAuhvxRP6opxrLk8zb6jXkqGYmelavNRcM0DTQsncBi6Wi4B0",
+    "iv": "IU60lp41MJgSMM21",
+    "c": "r9Q1AuWKooeInqlh+exIeqyj+pb8C2dby3tKSZcUeuVvBY7H/dWBkkLI5Rp6+QFv/IxIECiSDaP4yTHqeXYg1c1BQgukzjHAiG0TYRUxpz1q6953NDdKNkJNCqQTqOvWpN0SwWXUwNyBmMjFeptYVKVK9kF2cLQ8JZf0hVp9SEBBNYq5OqaNO7Q8Fb4qysJ5kvK+X0DjydtP+KsCf4Bah7uSV43UrywBL+3l81MqppPUWjOb+4r6CZuVZPaBu+bvm0iCw21Kn/jbLTT5Kl8EuMKso5FwFxW9TNr5Wz7DLjh5wOfjmRk="
+   }
+  },
   {
    "e": {
     "chiffre": 1,
